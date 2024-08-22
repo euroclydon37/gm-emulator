@@ -1,5 +1,6 @@
 import os from "os";
 import path from "path";
+import fs from "fs/promises";
 
 export const getAppDirectoryPath = async () => {
   const dirPath = path.resolve(os.homedir(), "rpg");
