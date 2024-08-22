@@ -7,7 +7,7 @@ export const getAppDirectoryPath = async () => {
   try {
     await fs.access(dirPath);
   } catch {
-    await fs.mkdir(path.dirname(dirPath), { recursive: true });
+    await fs.mkdir(dirPath);
   }
   return dirPath;
 };

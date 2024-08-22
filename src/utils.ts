@@ -1,5 +1,8 @@
 import prompts from "prompts";
-import { Command } from "./types";
+import path from "path";
+import fs from "fs/promises";
+import { AppState, Command } from "./types";
+import { getAppDirectoryPath } from "./constants.js";
 
 export const randomNumber = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1) + min);
@@ -7,6 +10,24 @@ export const randomNumber = (min: number, max: number) =>
 export const pickRandom = <T>(arr: T[]) => arr[randomNumber(0, arr.length - 1)];
 
 export const runCommand = ({ run }: Command) => run();
+
+export const askForString = async (question: string): Promise<string> => {
+  const { answer } = await prompts({
+    type: "text",
+    name: "answer",
+    message: question,
+  });
+  return answer;
+};
+
+export const askForNumber = async (question: string): Promise<number> => {
+  const { answer } = await prompts({
+    type: "number",
+    name: "answer",
+    message: question,
+  });
+  return answer;
+};
 
 export const chooseCommand = async ({
   question,
@@ -30,4 +51,36 @@ export const chooseCommand = async ({
 
 export const wrapOutput = (output: string) => {
   return "--------------------\n" + output + "\n--------------------";
+};
+
+export const loadAppState = async (): Promise<AppState> => {
+  const appDirectoryPath = await getAppDirectoryPath();
+  const appFilePath = path.resolve(appDirectoryPath, "app.json");
+  const emptyAppState: AppState = {
+    currentGame: "0",
+    games: [
+      {
+        id: "0",
+        log: [],
+        facts: {},
+      },
+    ],
+  };
+  try {
+    await fs.access(appFilePath);
+  } catch {
+    await fs.writeFile(appFilePath, JSON.stringify(emptyAppState), {
+      encoding: "utf8",
+    });
+  }
+  const appState = JSON.parse(await fs.readFile(appFilePath, "utf8"));
+  return appState;
+};
+
+export const saveAppState = async (appState: AppState) => {
+  const appDirectoryPath = await getAppDirectoryPath();
+  const appFilePath = path.resolve(appDirectoryPath, "app.json");
+  await fs.writeFile(appFilePath, JSON.stringify(appState, null, 2), {
+    encoding: "utf8",
+  });
 };
