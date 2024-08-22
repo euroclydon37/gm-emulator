@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import * as commands from "./commands/index.js";
+import { commands } from "./commands/index.js";
 import { chooseCommand, runCommand } from "./utils.js";
 
 const rootCommand = {

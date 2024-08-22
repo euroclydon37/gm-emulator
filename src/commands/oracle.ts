@@ -13,26 +13,26 @@ const getAndButString = () => {
 
 const YesNo = {
   very_likely: {
-    get: (number) => (number <= 90 ? "Yes" : "No"),
+    get: (x: number) => (x <= 90 ? "Yes" : "No"),
   },
   likely: {
-    get: (number) => (number <= 70 ? "Yes" : "No"),
+    get: (x: number) => (x <= 70 ? "Yes" : "No"),
   },
   "50/50": {
-    get: (number) => (number <= 50 ? "Yes" : "No"),
+    get: (x: number) => (x <= 50 ? "Yes" : "No"),
   },
   unlikely: {
-    get: (number) => (number <= 30 ? "Yes" : "No"),
+    get: (x: number) => (x <= 30 ? "Yes" : "No"),
   },
   very_unlikely: {
-    get: (number) => (number <= 10 ? "Yes" : "No"),
+    get: (x: number) => (x <= 10 ? "Yes" : "No"),
   },
 };
 
 export const OracleCommand = {
   name: "oracle",
   run: async () => {
-    const { likelihood } = await prompts({
+    const response = await prompts({
       type: "autocomplete",
       name: "likelihood",
       message: "How likely is it?",
@@ -44,6 +44,8 @@ export const OracleCommand = {
         { title: "Very unlikely", value: "very_unlikely" },
       ],
     });
+
+    const likelihood: keyof typeof YesNo = response.likelihood;
 
     const answer = YesNo[likelihood].get(randomNumber(1, 100));
     const result = answer + getAndButString();
