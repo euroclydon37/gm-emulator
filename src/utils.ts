@@ -50,7 +50,7 @@ export const chooseCommand = async ({
 };
 
 export const wrapOutput = (output: string) => {
-  return "--------------------\n" + output + "\n--------------------";
+  return "--------------------\n\n" + output + "\n\n--------------------";
 };
 
 export const loadAppState = async (): Promise<AppState> => {

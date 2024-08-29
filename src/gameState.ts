@@ -20,3 +20,10 @@ export function addLogEntry(log: string, game: GameState): GameState {
     log: [...game.log, log],
   };
 }
+
+export function removeLogEntry(game: GameState): GameState {
+  return {
+    ...game,
+    log: game.log.slice(0, -1),
+  };
+}
