@@ -3,10 +3,15 @@ export interface Command {
   run: () => void;
 }
 
+export interface Fact {
+  name: string;
+  value: string;
+}
+
 export interface GameState {
   id: string;
   log: ReadonlyArray<string>;
-  facts: Record<string, string>;
+  facts: Record<string, Fact>;
 }
 
 export interface AppState {
