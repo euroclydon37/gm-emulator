@@ -30,7 +30,7 @@ const YesNo = {
 };
 
 export const OracleCommand = {
-  name: "oracle",
+  name: "Oracle",
   run: async () => {
     const response = await prompts({
       type: "autocomplete",
