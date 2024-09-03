@@ -61,6 +61,10 @@ export const loadAppState = async (): Promise<AppState> => {
     games: [
       {
         id: "0",
+        dice: {
+          last_roll: undefined,
+          named_rolls: {},
+        },
         log: [],
         facts: {},
       },

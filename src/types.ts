@@ -10,6 +10,10 @@ export interface Fact {
 
 export interface GameState {
   id: string;
+  dice: {
+    last_roll: string | undefined;
+    named_rolls: Record<string, string>;
+  };
   log: ReadonlyArray<string>;
   facts: Record<string, Fact>;
 }
