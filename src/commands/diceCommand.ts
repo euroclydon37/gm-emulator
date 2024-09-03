@@ -10,8 +10,8 @@ import {
 import chalk from "chalk";
 import {
   getCurrentGame,
-  getLastDicePool,
   getNamedDicePools,
+  getRollHistory,
   removeNamedDicePool,
   saveLastDicePool,
   saveNamedDicePool,
@@ -29,16 +29,19 @@ const rollSimilarDice = (combo: string) => {
   );
 };
 
-const rollDicePool = async (combos: string) => {
+const rollDicePool = async (dicePool: string) => {
   const appState = await loadAppState();
   const game = getCurrentGame(appState);
-  await saveAppState(updateGameState(appState, saveLastDicePool(combos, game)));
-  return combos.split("+").map(rollSimilarDice).flat();
+  console.log("saving last dice pool", dicePool);
+  await saveAppState(
+    updateGameState(appState, saveLastDicePool(dicePool, game))
+  );
+  return dicePool.split("+").map(rollSimilarDice).flat();
 };
 
 const rollCustomDice = async () => {
   const dicePool = await askForString(
-    "Describe your dice pool. (e.g. 1d20+1d6) "
+    "Describe your dice pool. (e.g. 1d20+1d6)"
   );
   const rollResults = await rollDicePool(dicePool);
   console.log(wrapOutput(chalk.yellow(rollResults.join("\n"))));
@@ -85,21 +88,22 @@ const RollDiceCommand = {
     const appState = await loadAppState();
     const game = getCurrentGame(appState);
 
-    const lastUsedRollCombo = getLastDicePool(game);
-    const namedCombos = getNamedDicePools(game);
+    const rollHistory = getRollHistory(game);
+    console.log("roll history", rollHistory);
+    const namedDicePools = getNamedDicePools(game);
 
-    let choices = [{ title: "Custom", value: "custom" }];
-
-    Object.keys(namedCombos).forEach((name) => {
-      choices.push({ title: name, value: namedCombos[name] });
-    });
-
-    if (lastUsedRollCombo) {
-      choices.unshift({
-        title: `Last used (${lastUsedRollCombo})`,
-        value: lastUsedRollCombo,
-      });
-    }
+    const choices = rollHistory
+      .map((dicePool) => ({
+        title: dicePool,
+        value: dicePool,
+      }))
+      .concat(
+        Object.keys(namedDicePools).map((key) => ({
+          title: key,
+          value: namedDicePools[key],
+        }))
+      )
+      .concat([{ title: "Custom", value: "custom" }]);
 
     const { dice_combo } = await prompts({
       type: "autocomplete",

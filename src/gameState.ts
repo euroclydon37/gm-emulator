@@ -15,16 +15,19 @@ export const getCurrentGame = (state: AppState) =>
   state.games.find((game) => game.id === state.currentGame)!;
 
 //#region Managing dice
-export function getLastDicePool(game: GameState): string | undefined {
-  return game.dice.last_roll_combo;
+export function getRollHistory(game: GameState): ReadonlyArray<string> {
+  return game.dice.roll_history;
 }
 
-export function saveLastDicePool(combo: string, game: GameState) {
+export function saveLastDicePool(dicePool: string, game: GameState): GameState {
+  const removeWhiteSpace = (text: string) => text.replace(/\s/g, "");
   return {
     ...game,
     dice: {
       ...game.dice,
-      last_roll_combo: combo,
+      roll_history: [removeWhiteSpace(dicePool), ...game.dice.roll_history]
+        .filter((item) => item !== undefined && item !== null)
+        .slice(0, 3),
     },
   };
 }
