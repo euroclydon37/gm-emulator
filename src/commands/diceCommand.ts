@@ -12,7 +12,7 @@ const rollDiceCombo = (combo: string) => {
   );
 };
 
-export const DiceCommand = {
+const CustomDiceCommand = {
   name: "Dice",
   run: async () => {
     const { dice_combo } = await prompts({
@@ -26,5 +26,27 @@ export const DiceCommand = {
     console.log(
       wrapOutput(chalk.yellow(combos.map(rollDiceCombo).flat().join("\n")))
     );
+  },
+};
+
+export const DiceCommand = {
+  name: "Dice",
+  run: async () => {
+    const { dice_combo } = await prompts({
+      type: "autocomplete",
+      name: "dice_combo",
+      message: "What combo? (e.g. 1d20+1d6)",
+      choices: [
+        { title: "Last used (2d10+1d6)", value: "2d10+1d6" },
+        { title: "Custom", value: "custom" },
+      ],
+    });
+
+    if (dice_combo === "custom") {
+      CustomDiceCommand.run();
+      return;
+    }
+
+    console.log(wrapOutput(chalk.yellow("Not implemented")));
   },
 };
