@@ -13,7 +13,7 @@ const rollDiceCombo = (combo: string) => {
 };
 
 export const DiceCommand = {
-  name: "Roll dice",
+  name: "Dice",
   run: async () => {
     const { dice_combo } = await prompts({
       type: "text",

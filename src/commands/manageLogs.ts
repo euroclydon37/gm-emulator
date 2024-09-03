@@ -66,7 +66,7 @@ const DeleteLogCommand = {
 };
 
 export const ManageLogsCommand = {
-  name: "Manage logs",
+  name: "Logs",
   run: async () => {
     const command = await chooseCommand({
       question: "What do you want to do?",
