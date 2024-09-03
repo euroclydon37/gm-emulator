@@ -112,6 +112,17 @@ const RollDiceCommand = {
       choices,
     });
 
+    if (!dice_combo) {
+      console.log(
+        wrapOutput(
+          chalk.yellow(
+            "No dice pool selected.\n\nYou might have typed a custom dice pool. To do that, you'll first need to select 'Custom'."
+          )
+        )
+      );
+      return;
+    }
+
     if (dice_combo === "custom") {
       rollCustomDice();
       return;
