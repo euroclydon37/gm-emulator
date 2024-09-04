@@ -9,10 +9,10 @@ import {
 import {
   addGame,
   createGame,
+  deleteGame,
   getCurrentGame,
   getGameById,
   setActiveGame,
-  updateGameState,
 } from "../gameState.js";
 import { pipe } from "../fp.js";
 import prompts from "prompts";
@@ -34,7 +34,33 @@ export const CreateGameCommand = {
 const DeleteGameCommand = {
   name: "Delete",
   run: async () => {
-    console.log(wrapOutput(chalk.yellow("Not implemented yet")));
+    const appState = await loadAppState();
+    const currentGame = getCurrentGame(appState);
+
+    const emphasize = (text: string) => chalk.green(`${text} (active)`);
+
+    const { game_id } = await prompts({
+      type: "autocomplete",
+      message: "Which game do you want to delete?",
+      name: "game_id",
+      choices: appState.games.map((game) => ({
+        title: game.id === currentGame.id ? emphasize(game.name) : game.name,
+        value: game.id,
+      })),
+    });
+
+    const game = getGameById(game_id, appState);
+
+    if (game.id === currentGame.id) {
+      console.log(
+        wrapOutput(chalk.yellow("Game is active. Change games first."))
+      );
+      return;
+    }
+
+    await saveAppState(deleteGame(game_id));
+
+    console.log(wrapOutput(chalk.yellow(`Deleted ${game.name}`)));
   },
 };
 

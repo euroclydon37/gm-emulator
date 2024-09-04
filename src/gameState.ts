@@ -51,6 +51,15 @@ export const updateGameState =
     };
   };
 
+export const deleteGame =
+  (id: string) =>
+  (appState: AppState): AppState => {
+    return {
+      ...appState,
+      games: appState.games.filter((game) => game.id !== id),
+    };
+  };
+
 //#endregion
 
 //#region Managing dice
