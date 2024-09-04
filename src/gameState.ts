@@ -2,8 +2,11 @@ import { last } from "./fp.js";
 import { AppState, Fact, GameState } from "./types";
 
 //#region Managing games
+export const getGameById = (id: string | undefined, state: AppState) =>
+  state.games.find((game) => game.id === id)!;
+
 export const getCurrentGame = (state: AppState) =>
-  state.games.find((game) => game.id === state.currentGame)!;
+  getGameById(state.currentGame, state);
 
 export function createGame(name: string): GameState {
   return {

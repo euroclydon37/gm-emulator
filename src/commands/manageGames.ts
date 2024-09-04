@@ -9,10 +9,13 @@ import {
 import {
   addGame,
   createGame,
+  getCurrentGame,
+  getGameById,
   setActiveGame,
   updateGameState,
 } from "../gameState.js";
 import { pipe } from "../fp.js";
+import prompts from "prompts";
 
 export const CreateGameCommand = {
   name: "Create",
@@ -38,14 +41,48 @@ const DeleteGameCommand = {
 const SetActiveGameCommand = {
   name: "Set active",
   run: async () => {
-    console.log(wrapOutput(chalk.yellow("Not implemented yet")));
+    const appState = await loadAppState();
+    const currentGame = getCurrentGame(appState);
+
+    const emphasize = (text: string) => chalk.green(`${text} (active)`);
+
+    const { game_id } = await prompts({
+      type: "autocomplete",
+      message: "Which game do you want to set as active?",
+      name: "game_id",
+      choices: appState.games.map((game) => ({
+        title: game.id === currentGame.id ? emphasize(game.name) : game.name,
+        value: game.id,
+      })),
+    });
+
+    await saveAppState(setActiveGame(game_id));
+
+    console.log(
+      wrapOutput(
+        chalk.yellow(
+          `Set active game to ${getGameById(game_id, appState).name}`
+        )
+      )
+    );
   },
 };
 
 const ListGamesCommand = {
   name: "List",
   run: async () => {
-    console.log(wrapOutput(chalk.yellow("Not implemented yet")));
+    const appState = await loadAppState();
+    const currentGame = getCurrentGame(appState);
+
+    const emphasize = (text: string) => chalk.green(`${text} (active)`);
+
+    const result = appState.games
+      .map((game) =>
+        game.id === currentGame.id ? emphasize(game.name) : game.name
+      )
+      .join("\n");
+
+    console.log(wrapOutput(chalk.yellow(result)));
   },
 };
 
