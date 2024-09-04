@@ -16,11 +16,12 @@ import {
 export const CreateGameCommand = {
   name: "Create",
   run: async () => {
-    const appState = await loadAppState();
     const name = await askForString("Enter the name of your game.");
     const game = createGame(name);
 
-    await saveAppState(setActiveGame(game.id, addGame(game, appState)));
+    await saveAppState((appState) => {
+      return setActiveGame(game.id, addGame(game, appState));
+    });
 
     const result = `Created ${name}!`;
 

@@ -38,10 +38,11 @@ const AddLogCommand = {
   name: "Add log",
   run: async () => {
     const log = await askForString("Type your log");
-    const appState = await loadAppState();
-    const game = getCurrentGame(appState);
 
-    await saveAppState(updateGameState(appState, addLogEntry(log, game)));
+    await saveAppState((appState) => {
+      const game = getCurrentGame(appState);
+      return updateGameState(appState, addLogEntry(log, game));
+    });
 
     console.log(wrapOutput(chalk.yellow(`Added log: ${log}`)));
   },
@@ -60,7 +61,9 @@ const DeleteLogCommand = {
 
     const lastLog = last(game.log);
 
-    await saveAppState(updateGameState(appState, removeLogEntry(game)));
+    await saveAppState((appState) =>
+      updateGameState(appState, removeLogEntry(game))
+    );
     console.log(wrapOutput(chalk.yellow(`Deleted log: ${lastLog}`)));
   },
 };

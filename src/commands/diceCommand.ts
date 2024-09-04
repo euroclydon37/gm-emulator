@@ -18,6 +18,7 @@ import {
   updateGameState,
 } from "../gameState.js";
 import { title } from "process";
+import { pipe } from "../fp.js";
 
 const rollSimilarDice = (combo: string) => {
   const dice = combo.split("d");
@@ -30,12 +31,11 @@ const rollSimilarDice = (combo: string) => {
 };
 
 const rollDicePool = async (dicePool: string) => {
-  const appState = await loadAppState();
-  const game = getCurrentGame(appState);
   console.log("saving last dice pool", dicePool);
-  await saveAppState(
-    updateGameState(appState, saveLastDicePool(dicePool, game))
-  );
+  await saveAppState((appState) => {
+    const game = getCurrentGame(appState);
+    return updateGameState(appState, saveLastDicePool(dicePool, game));
+  });
   return dicePool.split("+").map(rollSimilarDice).flat();
 };
 
@@ -52,11 +52,11 @@ const SaveNamedDicePoolCommand = {
   run: async () => {
     const name = await askForString("What is the name of the dice pool?");
     const combo = await askForString("Describe the pool. (e.g. 1d20+1d6) ");
-    const appState = await loadAppState();
-    const game = getCurrentGame(appState);
-    await saveAppState(
-      updateGameState(appState, saveNamedDicePool(name, combo, game))
-    );
+
+    await saveAppState((appState) => {
+      const game = getCurrentGame(appState);
+      return updateGameState(appState, saveNamedDicePool(name, combo, game));
+    });
   },
 };
 
@@ -76,7 +76,7 @@ const RemoveNamedDicePoolCommand = {
       })),
     });
 
-    await saveAppState(
+    await saveAppState((appState) =>
       updateGameState(appState, removeNamedDicePool(combo, game))
     );
   },

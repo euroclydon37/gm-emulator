@@ -71,10 +71,17 @@ export const loadAppState = async (): Promise<AppState> => {
   return appState;
 };
 
-export const saveAppState = async (appState: AppState) => {
+export const saveAppState = async (
+  updater: (appState: AppState) => AppState
+) => {
   const appDirectoryPath = await getAppDirectoryPath();
   const appFilePath = path.resolve(appDirectoryPath, "app.json");
-  await fs.writeFile(appFilePath, JSON.stringify(appState, null, 2), {
-    encoding: "utf8",
-  });
+
+  await fs.writeFile(
+    appFilePath,
+    JSON.stringify(updater(await loadAppState()), null, 2),
+    {
+      encoding: "utf8",
+    }
+  );
 };
