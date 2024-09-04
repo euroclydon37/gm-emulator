@@ -12,6 +12,7 @@ import {
   setActiveGame,
   updateGameState,
 } from "../gameState.js";
+import { pipe } from "../fp.js";
 
 export const CreateGameCommand = {
   name: "Create",
@@ -19,9 +20,7 @@ export const CreateGameCommand = {
     const name = await askForString("Enter the name of your game.");
     const game = createGame(name);
 
-    await saveAppState((appState) => {
-      return setActiveGame(game.id, addGame(game, appState));
-    });
+    await saveAppState(pipe(addGame(game), setActiveGame(game.id)));
 
     const result = `Created ${name}!`;
 

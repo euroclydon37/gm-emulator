@@ -18,19 +18,23 @@ export function createGame(name: string): GameState {
   };
 }
 
-export function addGame(game: GameState, appState: AppState): AppState {
-  return {
-    ...appState,
-    games: [...appState.games, game],
+export const addGame =
+  (game: GameState) =>
+  (appState: AppState): AppState => {
+    return {
+      ...appState,
+      games: [...appState.games, game],
+    };
   };
-}
 
-export function setActiveGame(id: string, appState: AppState): AppState {
-  return {
-    ...appState,
-    currentGame: id,
+export const setActiveGame =
+  (id: string) =>
+  (appState: AppState): AppState => {
+    return {
+      ...appState,
+      currentGame: id,
+    };
   };
-}
 
 export const updateGameState = (
   appState: AppState,
