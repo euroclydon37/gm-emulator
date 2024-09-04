@@ -40,9 +40,7 @@ const AddFactCommand = {
     const appState = await loadAppState();
     const game = getCurrentGame(appState);
 
-    await saveAppState((appState) => {
-      return updateGameState(appState, addFact({ name, value }, game));
-    });
+    await saveAppState(updateGameState(addFact({ name, value })));
 
     console.log(wrapOutput(chalk.yellow(`Added fact: ${name}: ${value}`)));
   },
@@ -71,9 +69,7 @@ const DeleteFactCommand = {
       })),
     });
 
-    await saveAppState((appState) => {
-      return updateGameState(appState, removeFact(name, game));
-    });
+    await saveAppState(updateGameState(removeFact(name)));
 
     console.log(wrapOutput(chalk.yellow(`Deleted log: ${name}`)));
   },
