@@ -10,6 +10,7 @@ export interface Fact {
 
 export interface GameState {
   id: string;
+  name: string;
   dice: {
     roll_history: ReadonlyArray<string>;
     named_rolls: Record<string, string>;
@@ -19,6 +20,6 @@ export interface GameState {
 }
 
 export interface AppState {
-  currentGame: string;
+  currentGame: string | undefined;
   games: ReadonlyArray<GameState>;
 }

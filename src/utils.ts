@@ -57,18 +57,8 @@ export const loadAppState = async (): Promise<AppState> => {
   const appDirectoryPath = await getAppDirectoryPath();
   const appFilePath = path.resolve(appDirectoryPath, "app.json");
   const emptyAppState: AppState = {
-    currentGame: "0",
-    games: [
-      {
-        id: "0",
-        dice: {
-          roll_history: [],
-          named_rolls: {},
-        },
-        log: [],
-        facts: {},
-      },
-    ],
+    currentGame: undefined,
+    games: [],
   };
   try {
     await fs.access(appFilePath);

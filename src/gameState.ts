@@ -1,6 +1,37 @@
 import { last } from "./fp.js";
 import { AppState, Fact, GameState } from "./types";
 
+//#region Managing games
+export const getCurrentGame = (state: AppState) =>
+  state.games.find((game) => game.id === state.currentGame)!;
+
+export function createGame(name: string): GameState {
+  return {
+    id: String(new Date().toISOString()),
+    name,
+    dice: {
+      roll_history: [],
+      named_rolls: {},
+    },
+    log: [],
+    facts: {},
+  };
+}
+
+export function addGame(game: GameState, appState: AppState): AppState {
+  return {
+    ...appState,
+    games: [...appState.games, game],
+  };
+}
+
+export function setActiveGame(id: string, appState: AppState): AppState {
+  return {
+    ...appState,
+    currentGame: id,
+  };
+}
+
 export const updateGameState = (
   appState: AppState,
   gameState: GameState
@@ -11,8 +42,7 @@ export const updateGameState = (
   ),
 });
 
-export const getCurrentGame = (state: AppState) =>
-  state.games.find((game) => game.id === state.currentGame)!;
+//#endregion
 
 //#region Managing dice
 export function getRollHistory(game: GameState): ReadonlyArray<string> {
