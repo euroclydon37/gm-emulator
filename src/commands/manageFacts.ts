@@ -31,6 +31,35 @@ const ListFactsCommand = {
   },
 };
 
+const ReadFactCommand = {
+  name: "Find a fact",
+  run: async () => {
+    const appState = await loadAppState();
+    const game = getCurrentGame(appState);
+
+    const factNames = Object.keys(game.facts);
+
+    if (factNames.length === 0) {
+      console.log(wrapOutput(chalk.yellow("No facts to read")));
+      return;
+    }
+
+    const { name } = await prompts({
+      type: "autocomplete",
+      name: "name",
+      message: "Which fact?",
+      choices: factNames.map((name) => ({
+        title: name,
+        value: name,
+      })),
+    });
+
+    const fact = game.facts[name];
+
+    console.log(wrapOutput(chalk.yellow(`${fact.name}: ${fact.value}`)));
+  },
+};
+
 const AddFactCommand = {
   name: "Add fact",
   run: async () => {
@@ -80,7 +109,12 @@ export const ManageFactsCommand = {
   run: async () => {
     const command = await chooseCommand({
       question: "What do you want to do?",
-      commands: [AddFactCommand, DeleteFactCommand, ListFactsCommand],
+      commands: [
+        AddFactCommand,
+        DeleteFactCommand,
+        ListFactsCommand,
+        ReadFactCommand,
+      ],
     });
 
     command.run();
