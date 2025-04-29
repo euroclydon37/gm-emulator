@@ -46,7 +46,7 @@ export const updateGameState =
     return {
       currentGame: appState.currentGame,
       games: appState.games.map((game) =>
-        game.id === gameState.id ? updater(game) : game
+        game.id === gameState.id ? updater(game) : game,
       ),
     };
   };
@@ -110,8 +110,8 @@ export const removeNamedDicePool =
         ...game.dice,
         named_rolls: Object.fromEntries(
           Object.entries(game.dice.named_rolls).filter(
-            ([factName]) => factName !== name
-          )
+            ([factName]) => factName !== name,
+          ),
         ),
       },
     };
@@ -150,13 +150,15 @@ export const addFact =
     };
   };
 
+export const updateFact = addFact;
+
 export const removeFact =
   (name: string) =>
   (game: GameState): GameState => {
     return {
       ...game,
       facts: Object.fromEntries(
-        Object.entries(game.facts).filter(([factName]) => factName !== name)
+        Object.entries(game.facts).filter(([factName]) => factName !== name),
       ),
     };
   };

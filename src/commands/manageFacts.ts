@@ -10,9 +10,34 @@ import {
   addFact,
   getCurrentGame,
   removeFact,
+  updateFact,
   updateGameState,
 } from "../gameState.js";
 import prompts from "prompts";
+
+async function findFact() {
+  const appState = await loadAppState();
+  const game = getCurrentGame(appState);
+
+  const factNames = Object.keys(game.facts);
+
+  if (factNames.length === 0) {
+    console.log(wrapOutput(chalk.yellow("No facts to read")));
+    return;
+  }
+
+  const { name } = await prompts({
+    type: "autocomplete",
+    name: "name",
+    message: "Which fact?",
+    choices: factNames.map((name) => ({
+      title: name,
+      value: name,
+    })),
+  });
+
+  return game.facts[name];
+}
 
 const ListFactsCommand = {
   name: "List facts",
@@ -34,29 +59,11 @@ const ListFactsCommand = {
 const ReadFactCommand = {
   name: "Find a fact",
   run: async () => {
-    const appState = await loadAppState();
-    const game = getCurrentGame(appState);
+    const fact = await findFact();
 
-    const factNames = Object.keys(game.facts);
+    const message = fact ? `${fact.name}: ${fact.value}` : "Fact not found.";
 
-    if (factNames.length === 0) {
-      console.log(wrapOutput(chalk.yellow("No facts to read")));
-      return;
-    }
-
-    const { name } = await prompts({
-      type: "autocomplete",
-      name: "name",
-      message: "Which fact?",
-      choices: factNames.map((name) => ({
-        title: name,
-        value: name,
-      })),
-    });
-
-    const fact = game.facts[name];
-
-    console.log(wrapOutput(chalk.yellow(`${fact.name}: ${fact.value}`)));
+    console.log(wrapOutput(chalk.yellow(message)));
   },
 };
 
@@ -66,12 +73,23 @@ const AddFactCommand = {
     const name = await askForString("Give the fact a name: ");
     const value = await askForString("Type the fact: ");
 
-    const appState = await loadAppState();
-    const game = getCurrentGame(appState);
-
     await saveAppState(updateGameState(addFact({ name, value })));
 
     console.log(wrapOutput(chalk.yellow(`Added fact: ${name}: ${value}`)));
+  },
+};
+
+const UpdateFactCommand = {
+  name: "Update Fact",
+  run: async () => {
+    const fact = await findFact();
+    if (!fact) return;
+
+    const value = await askForString("New value:");
+
+    await saveAppState(updateGameState(updateFact({ name: fact.name, value })));
+
+    console.log(wrapOutput(chalk.yellow(`Updated to: ${value}`)));
   },
 };
 
@@ -114,6 +132,7 @@ export const ManageFactsCommand = {
         DeleteFactCommand,
         ListFactsCommand,
         ReadFactCommand,
+        UpdateFactCommand,
       ],
     });
 
