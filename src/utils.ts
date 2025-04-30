@@ -1,7 +1,7 @@
 import prompts from "prompts";
 import path from "path";
 import fs from "fs/promises";
-import { AppState, Command } from "./types";
+import type { AppState, Command } from "./types";
 import { getAppDirectoryPath } from "./constants.js";
 
 export const randomNumber = (min: number, max: number) =>
@@ -9,7 +9,7 @@ export const randomNumber = (min: number, max: number) =>
 
 export const pickRandom = <T>(arr: T[]) => arr[randomNumber(0, arr.length - 1)];
 
-export const runCommand = ({ run }: Command) => run();
+export const runCommand = <T>({ run }: Command<T>) => run();
 
 export const askForString = async (question: string): Promise<string> => {
   const { answer } = await prompts({
@@ -29,13 +29,13 @@ export const askForNumber = async (question: string): Promise<number> => {
   return answer;
 };
 
-export const chooseCommand = async ({
+export const chooseCommand = async <T>({
   question,
   commands,
 }: {
   question: string;
-  commands: Command[];
-}): Promise<Command> => {
+  commands: Command<T>[];
+}): Promise<Command<T>> => {
   const { cmd } = await prompts({
     type: "autocomplete",
     name: "cmd",
@@ -72,7 +72,7 @@ export const loadAppState = async (): Promise<AppState> => {
 };
 
 export const saveAppState = async (
-  updater: (appState: AppState) => AppState
+  updater: (appState: AppState) => AppState,
 ) => {
   const appDirectoryPath = await getAppDirectoryPath();
   const appFilePath = path.resolve(appDirectoryPath, "app.json");
@@ -82,6 +82,6 @@ export const saveAppState = async (
     JSON.stringify(updater(await loadAppState()), null, 2),
     {
       encoding: "utf8",
-    }
+    },
   );
 };

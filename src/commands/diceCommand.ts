@@ -44,7 +44,7 @@ const rollCustomDice = async () => {
   return wrapOutput(chalk.yellow(rollResults.join("\n")));
 };
 
-const SaveNamedDicePoolCommand: Command = {
+const SaveNamedDicePoolCommand: Command<string> = {
   name: "Add named dice pool",
   run: async () => {
     const name = await askForString("What is the name of the dice pool?");
@@ -55,7 +55,7 @@ const SaveNamedDicePoolCommand: Command = {
   },
 };
 
-const RemoveNamedDicePoolCommand: Command = {
+const RemoveNamedDicePoolCommand: Command<string> = {
   name: "Remove named dice pool",
   run: async () => {
     const appState = await loadAppState();
@@ -76,7 +76,7 @@ const RemoveNamedDicePoolCommand: Command = {
   },
 };
 
-const RollDiceCommand: Command = {
+const RollDiceCommand: Command<string> = {
   name: "Roll",
   run: async () => {
     const appState = await loadAppState();
@@ -123,7 +123,7 @@ const RollDiceCommand: Command = {
   },
 };
 
-export const DiceCommand: Command = {
+export const DiceCommand: Command<string> = {
   name: "Dice",
   run: async () => {
     const command = await chooseCommand({

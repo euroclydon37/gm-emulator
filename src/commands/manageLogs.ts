@@ -16,7 +16,7 @@ import chalk from "chalk";
 import { last } from "../fp.js";
 import { Command } from "../types.js";
 
-const ListLogsCommand: Command = {
+const ListLogsCommand: Command<string> = {
   name: "List logs",
   run: async () => {
     const logCount = await askForNumber("How many logs do you want to see?");
@@ -35,7 +35,7 @@ const ListLogsCommand: Command = {
   },
 };
 
-const AddLogCommand: Command = {
+const AddLogCommand: Command<string> = {
   name: "Add log",
   run: async () => {
     const log = await askForString("Type your log");
@@ -46,7 +46,7 @@ const AddLogCommand: Command = {
   },
 };
 
-const DeleteLogCommand: Command = {
+const DeleteLogCommand: Command<string> = {
   name: "Delete log",
   run: async () => {
     const appState = await loadAppState();
@@ -63,7 +63,7 @@ const DeleteLogCommand: Command = {
   },
 };
 
-export const ManageLogsCommand: Command = {
+export const ManageLogsCommand: Command<string> = {
   name: "Logs",
   run: async () => {
     const command = await chooseCommand({

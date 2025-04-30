@@ -30,7 +30,7 @@ const YesNo = {
   },
 };
 
-export const OracleCommand: Command = {
+export const OracleCommand: Command<string> = {
   name: "Oracle",
   run: async () => {
     const response = await prompts({
