@@ -16,6 +16,15 @@ import {
 import prompts from "prompts";
 import type { Command, Fact } from "../types.js";
 
+function factToString(fact: Fact): string {
+  const { name, value, details } = fact;
+
+  return `${name} ${value}\n${Object.values(details)
+    .map(factToString)
+    .map((text) => `\n${text}`)
+    .join("")}`;
+}
+
 async function findFact(): Promise<Fact | undefined> {
   const appState = await loadAppState();
   const game = getCurrentGame(appState);
@@ -57,15 +66,13 @@ const ListFactsCommand: Command = {
 };
 
 const ReadFactCommand: Command = {
-  name: "Find a fact",
+  name: "Read a fact",
   run: async () => {
     const fact = await findFact();
 
     if (!fact) return wrapOutput(chalk.red("No facts exist."));
 
-    const message = fact ? `${fact.name}: ${fact.value}` : "Fact not found.";
-
-    return wrapOutput(chalk.yellow(message));
+    return wrapOutput(chalk.yellow(factToString(fact)));
   },
 };
 
@@ -75,7 +82,7 @@ const AddFactCommand: Command = {
     const name = await askForString("Give the fact a name: ");
     const value = await askForString("Type the fact: ");
 
-    await saveAppState(updateGameState(addFact({ name, value })));
+    await saveAppState(updateGameState(addFact({ name, value, details: {} })));
 
     return wrapOutput(chalk.yellow(`Added fact: ${name}: ${value}`));
   },
@@ -90,7 +97,11 @@ const UpdateFactCommand: Command = {
 
     const value = await askForString("New value:");
 
-    await saveAppState(updateGameState(updateFact({ name: fact.name, value })));
+    await saveAppState(
+      updateGameState(
+        updateFact({ name: fact.name, value, details: fact.details }),
+      ),
+    );
 
     return wrapOutput(chalk.yellow(`Updated to: ${value}`));
   },

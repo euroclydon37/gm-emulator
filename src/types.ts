@@ -6,6 +6,7 @@ export interface Command {
 export interface Fact {
   name: string;
   value: string;
+  details: Record<string, Fact>;
 }
 
 export interface GameState {
