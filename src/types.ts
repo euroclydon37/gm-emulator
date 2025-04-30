@@ -1,6 +1,6 @@
-export interface Command<T> {
+export interface Command {
   name: string;
-  run: () => Promise<T>;
+  run: () => Promise<string>;
 }
 
 export interface Fact {

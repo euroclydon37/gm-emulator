@@ -39,7 +39,7 @@ async function findFact(): Promise<Fact | undefined> {
   return game.facts[name];
 }
 
-const ListFactsCommand: Command<string> = {
+const ListFactsCommand: Command = {
   name: "List facts",
   run: async () => {
     const appState = await loadAppState();
@@ -56,7 +56,7 @@ const ListFactsCommand: Command<string> = {
   },
 };
 
-const ReadFactCommand: Command<string> = {
+const ReadFactCommand: Command = {
   name: "Find a fact",
   run: async () => {
     const fact = await findFact();
@@ -69,7 +69,7 @@ const ReadFactCommand: Command<string> = {
   },
 };
 
-const AddFactCommand: Command<string> = {
+const AddFactCommand: Command = {
   name: "Add fact",
   run: async () => {
     const name = await askForString("Give the fact a name: ");
@@ -81,7 +81,7 @@ const AddFactCommand: Command<string> = {
   },
 };
 
-const UpdateFactCommand: Command<string> = {
+const UpdateFactCommand: Command = {
   name: "Update Fact",
   run: async () => {
     const fact = await findFact();
@@ -96,7 +96,7 @@ const UpdateFactCommand: Command<string> = {
   },
 };
 
-const DeleteFactCommand: Command<string> = {
+const DeleteFactCommand: Command = {
   name: "Delete fact",
   run: async () => {
     const fact = await findFact();
@@ -109,7 +109,7 @@ const DeleteFactCommand: Command<string> = {
   },
 };
 
-export const ManageFactsCommand: Command<string> = {
+export const ManageFactsCommand: Command = {
   name: "Facts",
   run: async () => {
     const command = await chooseCommand({

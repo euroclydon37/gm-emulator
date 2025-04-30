@@ -2,10 +2,9 @@
 import { commands } from "./commands/index.js";
 import { CreateGameCommand } from "./commands/manageGames.js";
 import { getCurrentGame } from "./gameState.js";
-import type { Command } from "./types.js";
 import { chooseCommand, loadAppState, runCommand } from "./utils.js";
 
-const rootCommand: Command<string> = {
+const rootCommand = {
   name: "root",
   run: async () => {
     const appState = await loadAppState();

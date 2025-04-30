@@ -4,7 +4,7 @@ import { descriptorFocus } from "../tables/descriptor-focus.js";
 import { chooseCommand, pickRandom, wrapOutput } from "../utils.js";
 import type { Command } from "../types.js";
 
-const ActionThemeCommand: Command<string> = {
+const ActionThemeCommand: Command = {
   name: "Action/theme",
   run: async () => {
     const [action, theme] = [
@@ -16,7 +16,7 @@ const ActionThemeCommand: Command<string> = {
   },
 };
 
-const DescriptorFocusCommand: Command<string> = {
+const DescriptorFocusCommand: Command = {
   name: "Descriptor/focus",
   run: async () => {
     const [descriptor, focus] = [
@@ -28,7 +28,7 @@ const DescriptorFocusCommand: Command<string> = {
   },
 };
 
-export const TablesCommand: Command<string> = {
+export const TablesCommand: Command = {
   name: "Tables",
   run: async () => {
     const command = await chooseCommand({

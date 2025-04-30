@@ -18,7 +18,7 @@ import { pipe } from "../fp.js";
 import prompts from "prompts";
 import { Command } from "../types.js";
 
-export const CreateGameCommand: Command<string> = {
+export const CreateGameCommand: Command = {
   name: "Create",
   run: async () => {
     const name = await askForString("Enter the name of your game.");
@@ -30,7 +30,7 @@ export const CreateGameCommand: Command<string> = {
   },
 };
 
-const DeleteGameCommand: Command<string> = {
+const DeleteGameCommand: Command = {
   name: "Delete",
   run: async () => {
     const appState = await loadAppState();
@@ -60,7 +60,7 @@ const DeleteGameCommand: Command<string> = {
   },
 };
 
-const SetActiveGameCommand: Command<string> = {
+const SetActiveGameCommand: Command = {
   name: "Set active",
   run: async () => {
     const appState = await loadAppState();
@@ -86,7 +86,7 @@ const SetActiveGameCommand: Command<string> = {
   },
 };
 
-const ListGamesCommand: Command<string> = {
+const ListGamesCommand: Command = {
   name: "List",
   run: async () => {
     const appState = await loadAppState();
@@ -104,7 +104,7 @@ const ListGamesCommand: Command<string> = {
   },
 };
 
-export const ManageGamesCommand: Command<string> = {
+export const ManageGamesCommand: Command = {
   name: "Games",
   run: async () => {
     const command = await chooseCommand({
