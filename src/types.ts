@@ -1,6 +1,6 @@
 export interface Command {
   name: string;
-  run: () => void;
+  run: () => Promise<string>;
 }
 
 export interface Fact {

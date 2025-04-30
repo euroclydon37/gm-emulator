@@ -17,6 +17,7 @@ import {
   saveNamedDicePool,
   updateGameState,
 } from "../gameState.js";
+import type { Command } from "../types.js";
 
 const rollSimilarDice = (combo: string) => {
   const dice = combo.split("d");
@@ -24,35 +25,37 @@ const rollSimilarDice = (combo: string) => {
   const dieSize = parseInt(dice[1]);
   return Array.from(
     { length: numDice },
-    () => `d${dieSize}: ${randomNumber(1, dieSize)}`
+    () => `d${dieSize}: ${randomNumber(1, dieSize)}`,
   );
 };
 
 const rollDicePool = async (dicePool: string) => {
-  console.log("saving last dice pool", dicePool);
+  // Save the dice roll to history
   await saveAppState(updateGameState(saveLastDicePool(dicePool)));
+
   return dicePool.split("+").map(rollSimilarDice).flat();
 };
 
 const rollCustomDice = async () => {
   const dicePool = await askForString(
-    "Describe your dice pool. (e.g. 1d20+1d6)"
+    "Describe your dice pool. (e.g. 1d20+1d6)",
   );
   const rollResults = await rollDicePool(dicePool);
-  console.log(wrapOutput(chalk.yellow(rollResults.join("\n"))));
+  return wrapOutput(chalk.yellow(rollResults.join("\n")));
 };
 
-const SaveNamedDicePoolCommand = {
+const SaveNamedDicePoolCommand: Command = {
   name: "Add named dice pool",
   run: async () => {
     const name = await askForString("What is the name of the dice pool?");
     const combo = await askForString("Describe the pool. (e.g. 1d20+1d6) ");
 
     await saveAppState(updateGameState(saveNamedDicePool(name, combo)));
+    return wrapOutput(chalk.green("Dice combo saved"));
   },
 };
 
-const RemoveNamedDicePoolCommand = {
+const RemoveNamedDicePoolCommand: Command = {
   name: "Remove named dice pool",
   run: async () => {
     const appState = await loadAppState();
@@ -69,17 +72,17 @@ const RemoveNamedDicePoolCommand = {
     });
 
     await saveAppState(updateGameState(removeNamedDicePool(combo)));
+    return wrapOutput(chalk.green("Dice combo removed"));
   },
 };
 
-const RollDiceCommand = {
+const RollDiceCommand: Command = {
   name: "Roll",
   run: async () => {
     const appState = await loadAppState();
     const game = getCurrentGame(appState);
 
     const rollHistory = getRollHistory(game);
-    console.log("roll history", rollHistory);
     const namedDicePools = getNamedDicePools(game);
 
     const choices = rollHistory
@@ -91,7 +94,7 @@ const RollDiceCommand = {
         Object.keys(namedDicePools).map((key) => ({
           title: key,
           value: namedDicePools[key],
-        }))
+        })),
       )
       .concat([{ title: "Custom", value: "custom" }]);
 
@@ -103,28 +106,24 @@ const RollDiceCommand = {
     });
 
     if (!dice_combo) {
-      console.log(
-        wrapOutput(
-          chalk.yellow(
-            "No dice pool selected.\n\nYou might have typed a custom dice pool. To do that, you'll first need to select 'Custom'."
-          )
-        )
+      return wrapOutput(
+        chalk.yellow(
+          "No dice pool selected.\n\nYou might have typed a custom dice pool. To do that, you'll first need to select 'Custom'.",
+        ),
       );
-      return;
     }
 
     if (dice_combo === "custom") {
-      rollCustomDice();
-      return;
+      return rollCustomDice();
     }
 
     const results = await rollDicePool(dice_combo);
 
-    console.log(wrapOutput(chalk.yellow(results.join("\n"))));
+    return wrapOutput(chalk.yellow(results.join("\n")));
   },
 };
 
-export const DiceCommand = {
+export const DiceCommand: Command = {
   name: "Dice",
   run: async () => {
     const command = await chooseCommand({
@@ -136,6 +135,6 @@ export const DiceCommand = {
       ],
     });
 
-    command.run();
+    return command.run();
   },
 };

@@ -14,8 +14,9 @@ import {
 } from "../gameState.js";
 import chalk from "chalk";
 import { last } from "../fp.js";
+import { Command } from "../types.js";
 
-const ListLogsCommand = {
+const ListLogsCommand: Command = {
   name: "List logs",
   run: async () => {
     const logCount = await askForNumber("How many logs do you want to see?");
@@ -30,40 +31,39 @@ const ListLogsCommand = {
             .slice(-logCount)
             .join("\n");
 
-    console.log(wrapOutput(chalk.yellow(message)));
+    return wrapOutput(chalk.yellow(message));
   },
 };
 
-const AddLogCommand = {
+const AddLogCommand: Command = {
   name: "Add log",
   run: async () => {
     const log = await askForString("Type your log");
 
     await saveAppState(updateGameState(addLogEntry(log)));
 
-    console.log(wrapOutput(chalk.yellow(`Added log: ${log}`)));
+    return wrapOutput(chalk.yellow(`Added log: ${log}`));
   },
 };
 
-const DeleteLogCommand = {
+const DeleteLogCommand: Command = {
   name: "Delete log",
   run: async () => {
     const appState = await loadAppState();
     const game = getCurrentGame(appState);
 
     if (game.log.length === 0) {
-      console.log(wrapOutput(chalk.yellow("No logs to delete")));
-      return;
+      return wrapOutput(chalk.yellow("No logs to delete"));
     }
 
     const lastLog = last(game.log);
 
     await saveAppState(updateGameState(removeLogEntry));
-    console.log(wrapOutput(chalk.yellow(`Deleted log: ${lastLog}`)));
+    return wrapOutput(chalk.yellow(`Deleted log: ${lastLog}`));
   },
 };
 
-export const ManageLogsCommand = {
+export const ManageLogsCommand: Command = {
   name: "Logs",
   run: async () => {
     const command = await chooseCommand({
@@ -71,6 +71,6 @@ export const ManageLogsCommand = {
       commands: [AddLogCommand, DeleteLogCommand, ListLogsCommand],
     });
 
-    command.run();
+    return command.run();
   },
 };

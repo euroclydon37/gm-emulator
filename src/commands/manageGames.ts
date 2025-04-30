@@ -16,8 +16,9 @@ import {
 } from "../gameState.js";
 import { pipe } from "../fp.js";
 import prompts from "prompts";
+import { Command } from "../types.js";
 
-export const CreateGameCommand = {
+export const CreateGameCommand: Command = {
   name: "Create",
   run: async () => {
     const name = await askForString("Enter the name of your game.");
@@ -25,13 +26,11 @@ export const CreateGameCommand = {
 
     await saveAppState(pipe(addGame(game), setActiveGame(game.id)));
 
-    const result = `Created ${name}!`;
-
-    console.log(wrapOutput(chalk.yellow(result)));
+    return wrapOutput(chalk.yellow(`Created ${name}!`));
   },
 };
 
-const DeleteGameCommand = {
+const DeleteGameCommand: Command = {
   name: "Delete",
   run: async () => {
     const appState = await loadAppState();
@@ -52,19 +51,16 @@ const DeleteGameCommand = {
     const game = getGameById(game_id, appState);
 
     if (game.id === currentGame.id) {
-      console.log(
-        wrapOutput(chalk.yellow("Game is active. Change games first."))
-      );
-      return;
+      return wrapOutput(chalk.yellow("Game is active. Change games first."));
     }
 
     await saveAppState(deleteGame(game_id));
 
-    console.log(wrapOutput(chalk.yellow(`Deleted ${game.name}`)));
+    return wrapOutput(chalk.yellow(`Deleted ${game.name}`));
   },
 };
 
-const SetActiveGameCommand = {
+const SetActiveGameCommand: Command = {
   name: "Set active",
   run: async () => {
     const appState = await loadAppState();
@@ -84,17 +80,13 @@ const SetActiveGameCommand = {
 
     await saveAppState(setActiveGame(game_id));
 
-    console.log(
-      wrapOutput(
-        chalk.yellow(
-          `Set active game to ${getGameById(game_id, appState).name}`
-        )
-      )
+    return wrapOutput(
+      chalk.yellow(`Set active game to ${getGameById(game_id, appState).name}`),
     );
   },
 };
 
-const ListGamesCommand = {
+const ListGamesCommand: Command = {
   name: "List",
   run: async () => {
     const appState = await loadAppState();
@@ -104,15 +96,15 @@ const ListGamesCommand = {
 
     const result = appState.games
       .map((game) =>
-        game.id === currentGame.id ? emphasize(game.name) : game.name
+        game.id === currentGame.id ? emphasize(game.name) : game.name,
       )
       .join("\n");
 
-    console.log(wrapOutput(chalk.yellow(result)));
+    return wrapOutput(chalk.yellow(result));
   },
 };
 
-export const ManageGamesCommand = {
+export const ManageGamesCommand: Command = {
   name: "Games",
   run: async () => {
     const command = await chooseCommand({
@@ -125,6 +117,6 @@ export const ManageGamesCommand = {
       ],
     });
 
-    command.run();
+    return command.run();
   },
 };

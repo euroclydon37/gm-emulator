@@ -11,8 +11,7 @@ const rootCommand = {
     const game = getCurrentGame(appState);
 
     if (!game) {
-      CreateGameCommand.run();
-      return;
+      return CreateGameCommand.run();
     }
 
     const command = await chooseCommand({
@@ -20,8 +19,10 @@ const rootCommand = {
       commands: Object.values(commands),
     });
 
-    command.run();
+    return command.run();
   },
 };
 
-runCommand(rootCommand);
+runCommand(rootCommand).then((msg: string) => {
+  console.log(msg);
+});

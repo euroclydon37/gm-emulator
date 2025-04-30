@@ -2,32 +2,33 @@ import chalk from "chalk";
 import { actionTheme } from "../tables/action-theme.js";
 import { descriptorFocus } from "../tables/descriptor-focus.js";
 import { chooseCommand, pickRandom, wrapOutput } from "../utils.js";
+import type { Command } from "../types.js";
 
-const ActionThemeCommand = {
+const ActionThemeCommand: Command = {
   name: "Action/theme",
-  run: () => {
+  run: async () => {
     const [action, theme] = [
       pickRandom(actionTheme).action,
       pickRandom(actionTheme).theme,
     ];
 
-    console.log(wrapOutput(chalk.yellow(`${action} ${theme}`)));
+    return wrapOutput(chalk.yellow(`${action} ${theme}`));
   },
 };
 
-const DescriptorFocusCommand = {
+const DescriptorFocusCommand: Command = {
   name: "Descriptor/focus",
-  run: () => {
+  run: async () => {
     const [descriptor, focus] = [
       pickRandom(descriptorFocus).descriptor,
       pickRandom(descriptorFocus).focus,
     ];
 
-    console.log(wrapOutput(chalk.yellow(`${descriptor} ${focus}`)));
+    return wrapOutput(chalk.yellow(`${descriptor} ${focus}`));
   },
 };
 
-export const TablesCommand = {
+export const TablesCommand: Command = {
   name: "Tables",
   run: async () => {
     const command = await chooseCommand({
@@ -35,6 +36,6 @@ export const TablesCommand = {
       commands: [ActionThemeCommand, DescriptorFocusCommand],
     });
 
-    command.run();
+    return command.run();
   },
 };
