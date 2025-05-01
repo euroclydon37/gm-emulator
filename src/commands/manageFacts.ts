@@ -65,8 +65,8 @@ const ListFactsCommand: Command = {
   },
 };
 
-const ReadFactCommand: Command = {
-  name: "Read a fact",
+const ExploreFactsCommand: Command = {
+  name: "Explore facts",
   run: async () => {
     const fact = await findFact();
 
@@ -129,7 +129,7 @@ export const ManageFactsCommand: Command = {
         AddFactCommand,
         DeleteFactCommand,
         ListFactsCommand,
-        ReadFactCommand,
+        ExploreFactsCommand,
         UpdateFactCommand,
       ],
     });
