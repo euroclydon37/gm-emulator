@@ -14,7 +14,7 @@ import {
   updateGameState,
 } from "../gameState.js";
 import prompts from "prompts";
-import type { Command, Fact } from "../types.js";
+import type { Command, Fact, Factbook } from "../types.js";
 
 async function loadFacts() {
   const appState = await loadAppState();
@@ -31,8 +31,8 @@ function factToString(fact: Fact): string {
     .join("")}`;
 }
 
-async function chooseFact(): Promise<Fact | undefined> {
-  const facts = await loadFacts();
+async function chooseFact(factbook?: Factbook): Promise<Fact | undefined> {
+  const facts = factbook ?? (await loadFacts());
   const factNames = Object.keys(facts);
 
   if (factNames.length === 0) {
