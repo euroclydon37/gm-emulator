@@ -1,7 +1,7 @@
 import prompts from "prompts";
 import path from "path";
 import fs from "fs/promises";
-import { AppState, Command } from "./types";
+import { AppError, AppState, Command } from "./types";
 import { getAppDirectoryPath } from "./constants.js";
 
 export const randomNumber = (min: number, max: number) =>
@@ -72,7 +72,7 @@ export const loadAppState = async (): Promise<AppState> => {
 };
 
 export const saveAppState = async (
-  updater: (appState: AppState) => AppState
+  updater: (appState: AppState) => AppState,
 ) => {
   const appDirectoryPath = await getAppDirectoryPath();
   const appFilePath = path.resolve(appDirectoryPath, "app.json");
@@ -82,6 +82,10 @@ export const saveAppState = async (
     JSON.stringify(updater(await loadAppState()), null, 2),
     {
       encoding: "utf8",
-    }
+    },
   );
 };
+
+export function isError(input: unknown): input is AppError {
+  return !!input && (input as AppError).type === "error";
+}

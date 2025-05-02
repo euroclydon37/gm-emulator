@@ -2,6 +2,7 @@ import chalk from "chalk";
 import {
   askForString,
   chooseCommand,
+  isError,
   loadAppState,
   saveAppState,
   wrapOutput,
@@ -39,17 +40,50 @@ async function chooseFact(factbook?: Factbook): Promise<Fact | AppError> {
     return { type: "error", message: "No facts to choose from" };
   }
 
+  const factOptions = factNames.map((name) => ({
+    title: name,
+    value: name,
+  }));
+
+  const options = factbook
+    ? [{ title: "Go back", value: "back" }, ...factOptions]
+    : [{ title: "Exit", value: "exit" }, ...factOptions];
+
   const { choice } = await prompts({
     type: "autocomplete",
     name: "choice",
     message: "Which fact?",
-    choices: factNames.map((name) => ({
-      title: name,
-      value: name,
-    })),
+    choices: options,
   });
 
-  return facts[choice];
+  if (choice === "back") {
+    return { type: "error", message: "back" };
+  }
+
+  if (choice === "exit") {
+    return { type: "error", message: "exit" };
+  }
+
+  const { next } = await prompts({
+    type: "autocomplete",
+    name: "next",
+    message: "What next?",
+    choices: [
+      { title: "Show this", value: "stop" },
+      { title: "Choose detail", value: "continue" },
+    ],
+  });
+
+  const fact = facts[choice];
+
+  if (next === "continue") {
+    const nextFact = await chooseFact(fact.details);
+    if (isError(nextFact) && nextFact.message === "back")
+      return chooseFact(factbook);
+    return nextFact;
+  }
+
+  return fact;
 }
 
 const ListFactsCommand: Command = {
@@ -74,7 +108,10 @@ const ExploreFactsCommand: Command = {
   run: async () => {
     const fact = await chooseFact();
 
-    if (!fact) return wrapOutput(chalk.red("No facts exist."));
+    if (isError(fact)) {
+      const message = fact.message === "exit" ? "No fact chosen" : fact.message;
+      return wrapOutput(chalk.red(message));
+    }
 
     return wrapOutput(chalk.yellow(factToString(fact)));
   },
@@ -97,7 +134,7 @@ const EditFactCommand: Command = {
   run: async () => {
     const fact = await chooseFact();
 
-    if (!fact) return wrapOutput(chalk.red("No facts exist."));
+    if (isError(fact)) return wrapOutput(chalk.red("No facts exist."));
 
     const value = await askForString("New value:");
 
@@ -116,7 +153,7 @@ const DeleteFactCommand: Command = {
   run: async () => {
     const fact = await chooseFact();
 
-    if (!fact) return wrapOutput(chalk.red("No facts exist."));
+    if (isError(fact)) return wrapOutput(chalk.red("No facts exist."));
 
     await saveAppState(updateGameState(removeFact(fact.name)));
 
