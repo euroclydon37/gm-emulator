@@ -3,6 +3,11 @@ export interface Command {
   run: () => Promise<string>;
 }
 
+export interface AppError {
+  type: "error";
+  message: string;
+}
+
 export interface Fact {
   name: string;
   value: string;
