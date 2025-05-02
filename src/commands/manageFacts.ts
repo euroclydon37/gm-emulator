@@ -16,6 +16,12 @@ import {
 import prompts from "prompts";
 import type { Command, Fact } from "../types.js";
 
+async function loadFacts() {
+  const appState = await loadAppState();
+  const game = getCurrentGame(appState);
+  return game.facts;
+}
+
 function factToString(fact: Fact): string {
   const { name, value, details } = fact;
 
@@ -26,10 +32,8 @@ function factToString(fact: Fact): string {
 }
 
 async function chooseFact(): Promise<Fact | undefined> {
-  const appState = await loadAppState();
-  const game = getCurrentGame(appState);
-
-  const factNames = Object.keys(game.facts);
+  const facts = await loadFacts();
+  const factNames = Object.keys(facts);
 
   if (factNames.length === 0) {
     return;
@@ -45,7 +49,7 @@ async function chooseFact(): Promise<Fact | undefined> {
     })),
   });
 
-  return game.facts[name];
+  return facts[name];
 }
 
 const ListFactsCommand: Command = {
