@@ -25,7 +25,7 @@ function factToString(fact: Fact): string {
     .join("")}`;
 }
 
-async function findFact(): Promise<Fact | undefined> {
+async function chooseFact(): Promise<Fact | undefined> {
   const appState = await loadAppState();
   const game = getCurrentGame(appState);
 
@@ -68,7 +68,7 @@ const ListFactsCommand: Command = {
 const ExploreFactsCommand: Command = {
   name: "Explore facts",
   run: async () => {
-    const fact = await findFact();
+    const fact = await chooseFact();
 
     if (!fact) return wrapOutput(chalk.red("No facts exist."));
 
@@ -91,7 +91,7 @@ const AddFactCommand: Command = {
 const EditFactCommand: Command = {
   name: "Edit fact",
   run: async () => {
-    const fact = await findFact();
+    const fact = await chooseFact();
 
     if (!fact) return wrapOutput(chalk.red("No facts exist."));
 
@@ -110,7 +110,7 @@ const EditFactCommand: Command = {
 const DeleteFactCommand: Command = {
   name: "Delete fact",
   run: async () => {
-    const fact = await findFact();
+    const fact = await chooseFact();
 
     if (!fact) return wrapOutput(chalk.red("No facts exist."));
 
