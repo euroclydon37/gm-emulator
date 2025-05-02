@@ -6,8 +6,10 @@ export interface Command {
 export interface Fact {
   name: string;
   value: string;
-  details: Record<string, Fact>;
+  details: Factbook;
 }
+
+export type Factbook = Record<string, Fact>;
 
 export interface GameState {
   id: string;
@@ -17,7 +19,7 @@ export interface GameState {
     named_rolls: Record<string, string>;
   };
   log: ReadonlyArray<string>;
-  facts: Record<string, Fact>;
+  facts: Factbook;
 }
 
 export interface AppState {
