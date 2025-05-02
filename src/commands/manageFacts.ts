@@ -19,7 +19,7 @@ import type { Command, Fact } from "../types.js";
 function factToString(fact: Fact): string {
   const { name, value, details } = fact;
 
-  return `${name} ${value}\n${Object.values(details)
+  return `\n${name} ${value}\n${Object.values(details)
     .map(factToString)
     .map((text) => `\n${text}`)
     .join("")}`;
