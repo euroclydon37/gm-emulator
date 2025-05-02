@@ -14,7 +14,7 @@ import {
   updateGameState,
 } from "../gameState.js";
 import prompts from "prompts";
-import type { Command, Fact, Factbook } from "../types.js";
+import type { AppError, Command, Fact, Factbook } from "../types.js";
 
 async function loadFacts() {
   const appState = await loadAppState();
@@ -31,17 +31,17 @@ function factToString(fact: Fact): string {
     .join("")}`;
 }
 
-async function chooseFact(factbook?: Factbook): Promise<Fact | undefined> {
+async function chooseFact(factbook?: Factbook): Promise<Fact | AppError> {
   const facts = factbook ?? (await loadFacts());
   const factNames = Object.keys(facts);
 
   if (factNames.length === 0) {
-    return;
+    return { type: "error", message: "No facts to choose from" };
   }
 
-  const { name } = await prompts({
+  const { choice } = await prompts({
     type: "autocomplete",
-    name: "name",
+    name: "choice",
     message: "Which fact?",
     choices: factNames.map((name) => ({
       title: name,
@@ -49,7 +49,7 @@ async function chooseFact(factbook?: Factbook): Promise<Fact | undefined> {
     })),
   });
 
-  return facts[name];
+  return facts[choice];
 }
 
 const ListFactsCommand: Command = {
