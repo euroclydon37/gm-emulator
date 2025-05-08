@@ -3,13 +3,14 @@ import path from "path";
 import fs from "fs/promises";
 import { AppError, AppState, Command } from "./types";
 import { getAppDirectoryPath } from "./constants.js";
+import { Effect } from "effect";
 
 export const randomNumber = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1) + min);
 
 export const pickRandom = <T>(arr: T[]) => arr[randomNumber(0, arr.length - 1)];
 
-export const runCommand = ({ run }: Command) => run();
+export const runCommand = ({ run }: Command) => Effect.promise(run);
 
 export const askForString = async (question: string): Promise<string> => {
   const { answer } = await prompts({
