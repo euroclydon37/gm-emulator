@@ -4,15 +4,16 @@ import { commands } from "./commands/index.js";
 import { CreateGameCommand } from "./commands/manageGames.js";
 import { getCurrentGame } from "./gameState.js";
 import { chooseCommand, loadAppState, runCommand } from "./utils.js";
+import { Command } from "./types.js";
 
-const rootCommand = {
+const rootCommand: Command = {
   name: "root",
-  run: async () => {
+  run: Effect.promise(async () => {
     const appState = await loadAppState();
     const game = getCurrentGame(appState);
 
     if (!game) {
-      return CreateGameCommand.run();
+      return CreateGameCommand;
     }
 
     const command = await chooseCommand({
@@ -20,17 +21,10 @@ const rootCommand = {
       commands: Object.values(commands),
     });
 
-    return command.run();
-  },
+    return command;
+  }),
 };
 
-// runCommand(rootCommand).then((msg: string) => {
-//   console.log(msg);
-// });
-
-const program = Effect.gen(function* (_) {
-  const result = yield* runCommand(rootCommand);
-  yield* _(Console.log(result));
-});
+const program = runCommand(rootCommand);
 
 Effect.runFork(program);

@@ -1,6 +1,8 @@
+import { Effect } from "effect";
+
 export interface Command {
   name: string;
-  run: () => Promise<string>;
+  run: Effect.Effect<Command | string, Error, never>;
 }
 
 export interface AppError {

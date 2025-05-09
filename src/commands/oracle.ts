@@ -2,6 +2,7 @@ import prompts from "prompts";
 import { randomNumber, wrapOutput } from "../utils.js";
 import chalk from "chalk";
 import { Command } from "../types.js";
+import { Effect } from "effect";
 
 const getAndButString = () => {
   const number = randomNumber(1, 100);
@@ -32,7 +33,7 @@ const YesNo = {
 
 export const OracleCommand: Command = {
   name: "Oracle",
-  run: async () => {
+  run: Effect.promise(async () => {
     const response = await prompts({
       type: "autocomplete",
       name: "likelihood",
@@ -54,5 +55,5 @@ export const OracleCommand: Command = {
     return wrapOutput(
       answer === "Yes" ? chalk.green(result) : chalk.red(result),
     );
-  },
+  }),
 };

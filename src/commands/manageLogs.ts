@@ -15,10 +15,11 @@ import {
 import chalk from "chalk";
 import { last } from "../fp.js";
 import { Command } from "../types.js";
+import { Effect } from "effect";
 
 const ListLogsCommand: Command = {
   name: "List logs",
-  run: async () => {
+  run: Effect.promise(async () => {
     const logCount = await askForNumber("How many logs do you want to see?");
     const appState = await loadAppState();
     const game = getCurrentGame(appState);
@@ -32,23 +33,23 @@ const ListLogsCommand: Command = {
             .join("\n");
 
     return wrapOutput(chalk.yellow(message));
-  },
+  }),
 };
 
 const AddLogCommand: Command = {
   name: "Add log",
-  run: async () => {
+  run: Effect.promise(async () => {
     const log = await askForString("Type your log");
 
     await saveAppState(updateGameState(addLogEntry(log)));
 
     return wrapOutput(chalk.yellow(`Added log: ${log}`));
-  },
+  }),
 };
 
 const DeleteLogCommand: Command = {
   name: "Delete log",
-  run: async () => {
+  run: Effect.promise(async () => {
     const appState = await loadAppState();
     const game = getCurrentGame(appState);
 
@@ -60,17 +61,17 @@ const DeleteLogCommand: Command = {
 
     await saveAppState(updateGameState(removeLogEntry));
     return wrapOutput(chalk.yellow(`Deleted log: ${lastLog}`));
-  },
+  }),
 };
 
 export const ManageLogsCommand: Command = {
   name: "Logs",
-  run: async () => {
+  run: Effect.promise(async () => {
     const command = await chooseCommand({
       question: "What do you want to do?",
       commands: [AddLogCommand, DeleteLogCommand, ListLogsCommand],
     });
 
-    return command.run();
-  },
+    return command;
+  }),
 };

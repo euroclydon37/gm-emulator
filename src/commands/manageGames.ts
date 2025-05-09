@@ -17,22 +17,23 @@ import {
 import { pipe } from "../fp.js";
 import prompts from "prompts";
 import { Command } from "../types.js";
+import { Effect } from "effect";
 
 export const CreateGameCommand: Command = {
   name: "Create",
-  run: async () => {
+  run: Effect.promise(async () => {
     const name = await askForString("Enter the name of your game.");
     const game = createGame(name);
 
     await saveAppState(pipe(addGame(game), setActiveGame(game.id)));
 
     return wrapOutput(chalk.yellow(`Created ${name}!`));
-  },
+  }),
 };
 
 const DeleteGameCommand: Command = {
   name: "Delete",
-  run: async () => {
+  run: Effect.promise(async () => {
     const appState = await loadAppState();
     const currentGame = getCurrentGame(appState);
 
@@ -57,12 +58,12 @@ const DeleteGameCommand: Command = {
     await saveAppState(deleteGame(game_id));
 
     return wrapOutput(chalk.yellow(`Deleted ${game.name}`));
-  },
+  }),
 };
 
 const SetActiveGameCommand: Command = {
   name: "Set active",
-  run: async () => {
+  run: Effect.promise(async () => {
     const appState = await loadAppState();
     const currentGame = getCurrentGame(appState);
 
@@ -83,12 +84,12 @@ const SetActiveGameCommand: Command = {
     return wrapOutput(
       chalk.yellow(`Set active game to ${getGameById(game_id, appState).name}`),
     );
-  },
+  }),
 };
 
 const ListGamesCommand: Command = {
   name: "List",
-  run: async () => {
+  run: Effect.promise(async () => {
     const appState = await loadAppState();
     const currentGame = getCurrentGame(appState);
 
@@ -101,12 +102,12 @@ const ListGamesCommand: Command = {
       .join("\n");
 
     return wrapOutput(chalk.yellow(result));
-  },
+  }),
 };
 
 export const ManageGamesCommand: Command = {
   name: "Games",
-  run: async () => {
+  run: Effect.promise(async () => {
     const command = await chooseCommand({
       question: "What do you want to do?",
       commands: [
@@ -117,6 +118,6 @@ export const ManageGamesCommand: Command = {
       ],
     });
 
-    return command.run();
-  },
+    return command;
+  }),
 };

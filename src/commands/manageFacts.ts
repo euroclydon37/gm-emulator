@@ -16,6 +16,7 @@ import {
 } from "../gameState.js";
 import prompts from "prompts";
 import type { AppError, Command, Fact, Factbook } from "../types.js";
+import { Effect } from "effect";
 
 async function loadFacts() {
   const appState = await loadAppState();
@@ -88,7 +89,7 @@ async function chooseFact(factbook?: Factbook): Promise<Fact | AppError> {
 
 const ListFactsCommand: Command = {
   name: "List facts",
-  run: async () => {
+  run: Effect.promise(async () => {
     const appState = await loadAppState();
     const game = getCurrentGame(appState);
 
@@ -100,12 +101,12 @@ const ListFactsCommand: Command = {
       facts.length === 0 ? "No facts available" : facts.join("\n");
 
     return wrapOutput(chalk.yellow(message));
-  },
+  }),
 };
 
 const ExploreFactsCommand: Command = {
   name: "Explore facts",
-  run: async () => {
+  run: Effect.promise(async () => {
     const fact = await chooseFact();
 
     if (isError(fact)) {
@@ -114,24 +115,24 @@ const ExploreFactsCommand: Command = {
     }
 
     return wrapOutput(chalk.yellow(factToString(fact)));
-  },
+  }),
 };
 
 const AddFactCommand: Command = {
   name: "Add fact",
-  run: async () => {
+  run: Effect.promise(async () => {
     const name = await askForString("Give the fact a name: ");
     const value = await askForString("Type the fact: ");
 
     await saveAppState(updateGameState(addFact({ name, value, details: {} })));
 
     return wrapOutput(chalk.yellow(`Added fact: ${name}: ${value}`));
-  },
+  }),
 };
 
 const EditFactCommand: Command = {
   name: "Edit fact",
-  run: async () => {
+  run: Effect.promise(async () => {
     const fact = await chooseFact();
 
     if (isError(fact)) return wrapOutput(chalk.red("No facts exist."));
@@ -145,12 +146,12 @@ const EditFactCommand: Command = {
     );
 
     return wrapOutput(chalk.yellow(`Updated to: ${value}`));
-  },
+  }),
 };
 
 const DeleteFactCommand: Command = {
   name: "Delete fact",
-  run: async () => {
+  run: Effect.promise(async () => {
     const fact = await chooseFact();
 
     if (isError(fact)) return wrapOutput(chalk.red("No facts exist."));
@@ -158,12 +159,12 @@ const DeleteFactCommand: Command = {
     await saveAppState(updateGameState(removeFact(fact.name)));
 
     return wrapOutput(chalk.yellow(`Deleted log: ${fact.name}`));
-  },
+  }),
 };
 
 export const ManageFactsCommand: Command = {
   name: "Facts",
-  run: async () => {
+  run: Effect.promise(async () => {
     const command = await chooseCommand({
       question: "What do you want to do?",
       commands: [
@@ -175,6 +176,6 @@ export const ManageFactsCommand: Command = {
       ],
     });
 
-    return command.run();
-  },
+    return command;
+  }),
 };

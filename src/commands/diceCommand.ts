@@ -18,6 +18,7 @@ import {
   updateGameState,
 } from "../gameState.js";
 import type { Command } from "../types.js";
+import { Effect } from "effect";
 
 const rollSimilarDice = (combo: string) => {
   const dice = combo.split("d");
@@ -46,18 +47,18 @@ const rollCustomDice = async () => {
 
 const SaveNamedDicePoolCommand: Command = {
   name: "Add named dice pool",
-  run: async () => {
+  run: Effect.promise(async () => {
     const name = await askForString("What is the name of the dice pool?");
     const combo = await askForString("Describe the pool. (e.g. 1d20+1d6) ");
 
     await saveAppState(updateGameState(saveNamedDicePool(name, combo)));
     return wrapOutput(chalk.green("Dice combo saved"));
-  },
+  }),
 };
 
 const RemoveNamedDicePoolCommand: Command = {
   name: "Remove named dice pool",
-  run: async () => {
+  run: Effect.promise(async () => {
     const appState = await loadAppState();
     const game = getCurrentGame(appState);
 
@@ -73,12 +74,12 @@ const RemoveNamedDicePoolCommand: Command = {
 
     await saveAppState(updateGameState(removeNamedDicePool(combo)));
     return wrapOutput(chalk.green("Dice combo removed"));
-  },
+  }),
 };
 
 const RollDiceCommand: Command = {
   name: "Roll",
-  run: async () => {
+  run: Effect.promise(async () => {
     const appState = await loadAppState();
     const game = getCurrentGame(appState);
 
@@ -120,12 +121,12 @@ const RollDiceCommand: Command = {
     const results = await rollDicePool(dice_combo);
 
     return wrapOutput(chalk.yellow(results.join("\n")));
-  },
+  }),
 };
 
 export const DiceCommand: Command = {
   name: "Dice",
-  run: async () => {
+  run: Effect.promise(async () => {
     const command = await chooseCommand({
       question: "What do you want to do?",
       commands: [
@@ -135,6 +136,6 @@ export const DiceCommand: Command = {
       ],
     });
 
-    return command.run();
-  },
+    return command;
+  }),
 };
