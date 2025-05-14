@@ -20,6 +20,7 @@ import { Command } from "../types.js";
 import { Effect } from "effect";
 
 export const CreateGameCommand: Command = {
+  __tag: "command",
   name: "Create",
   run: Effect.promise(async () => {
     const name = await askForString("Enter the name of your game.");
@@ -32,6 +33,7 @@ export const CreateGameCommand: Command = {
 };
 
 const DeleteGameCommand: Command = {
+  __tag: "command",
   name: "Delete",
   run: Effect.promise(async () => {
     const appState = await loadAppState();
@@ -62,6 +64,7 @@ const DeleteGameCommand: Command = {
 };
 
 const SetActiveGameCommand: Command = {
+  __tag: "command",
   name: "Set active",
   run: Effect.promise(async () => {
     const appState = await loadAppState();
@@ -88,6 +91,7 @@ const SetActiveGameCommand: Command = {
 };
 
 const ListGamesCommand: Command = {
+  __tag: "command",
   name: "List",
   run: Effect.promise(async () => {
     const appState = await loadAppState();
@@ -106,18 +110,15 @@ const ListGamesCommand: Command = {
 };
 
 export const ManageGamesCommand: Command = {
+  __tag: "command",
   name: "Games",
-  run: Effect.promise(async () => {
-    const command = await chooseCommand({
-      question: "What do you want to do?",
-      commands: [
-        CreateGameCommand,
-        DeleteGameCommand,
-        SetActiveGameCommand,
-        ListGamesCommand,
-      ],
-    });
-
-    return command;
+  run: chooseCommand({
+    question: "What do you want to do?",
+    commands: [
+      CreateGameCommand,
+      DeleteGameCommand,
+      SetActiveGameCommand,
+      ListGamesCommand,
+    ],
   }),
 };

@@ -1,6 +1,7 @@
 import { Effect } from "effect";
 
 export interface Command {
+  __tag: "command";
   name: string;
   run: Effect.Effect<Command | string, Error, never>;
 }

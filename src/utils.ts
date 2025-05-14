@@ -5,6 +5,9 @@ import { AppError, AppState, Command } from "./types";
 import { getAppDirectoryPath } from "./constants.js";
 import { Effect, pipe, Console } from "effect";
 
+const isDefined = <T>(x: T | undefined | null): x is T =>
+  x !== undefined && x !== null;
+
 export const randomNumber = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1) + min);
 
@@ -12,11 +15,11 @@ export const pickRandom = <T>(arr: T[]) => arr[randomNumber(0, arr.length - 1)];
 
 export const runCommand = (
   command: Command,
-): Effect.Effect<void, Error, never> =>
+): Effect.Effect<string, Error, never> =>
   pipe(
     command.run,
     Effect.flatMap((result) =>
-      typeof result === "string" ? Console.log(result) : runCommand(result),
+      typeof result === "string" ? Effect.succeed(result) : runCommand(result),
     ),
   );
 
@@ -38,25 +41,31 @@ export const askForNumber = async (question: string): Promise<number> => {
   return answer;
 };
 
-export const chooseCommand = async ({
+export const chooseCommand = ({
   question,
   commands,
 }: {
   question: string;
   commands: Command[];
-}): Promise<Command> => {
-  const { cmd } = await prompts({
-    type: "autocomplete",
-    name: "cmd",
-    message: question,
-    choices: commands.map((command) => ({
-      title: command.name,
-      value: command,
-    })),
-  });
+}) =>
+  Effect.tryPromise<Command, Error>({
+    try: async () => {
+      const { cmd } = await prompts({
+        type: "autocomplete",
+        name: "cmd",
+        message: question,
+        choices: commands.map((command) => ({
+          title: command.name,
+          value: command,
+        })),
+      });
 
-  return cmd;
-};
+      if (!isCommand(cmd)) throw new Error();
+
+      return cmd;
+    },
+    catch: () => new Error("No command chosen."),
+  });
 
 export const wrapOutput = (output: string) => {
   return "--------------------\n\n" + output + "\n\n--------------------";
@@ -97,4 +106,10 @@ export const saveAppState = async (
 
 export function isError(input: unknown): input is AppError {
   return !!input && (input as AppError).type === "error";
+}
+
+export function isCommand(maybeCommand: unknown): maybeCommand is Command {
+  return (
+    isDefined(maybeCommand) && (maybeCommand as Command).__tag === "command"
+  );
 }

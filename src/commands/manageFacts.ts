@@ -88,6 +88,7 @@ async function chooseFact(factbook?: Factbook): Promise<Fact | AppError> {
 }
 
 const ListFactsCommand: Command = {
+  __tag: "command",
   name: "List facts",
   run: Effect.promise(async () => {
     const appState = await loadAppState();
@@ -105,6 +106,7 @@ const ListFactsCommand: Command = {
 };
 
 const ExploreFactsCommand: Command = {
+  __tag: "command",
   name: "Explore facts",
   run: Effect.promise(async () => {
     const fact = await chooseFact();
@@ -119,6 +121,7 @@ const ExploreFactsCommand: Command = {
 };
 
 const AddFactCommand: Command = {
+  __tag: "command",
   name: "Add fact",
   run: Effect.promise(async () => {
     const name = await askForString("Give the fact a name: ");
@@ -131,6 +134,7 @@ const AddFactCommand: Command = {
 };
 
 const EditFactCommand: Command = {
+  __tag: "command",
   name: "Edit fact",
   run: Effect.promise(async () => {
     const fact = await chooseFact();
@@ -150,6 +154,7 @@ const EditFactCommand: Command = {
 };
 
 const DeleteFactCommand: Command = {
+  __tag: "command",
   name: "Delete fact",
   run: Effect.promise(async () => {
     const fact = await chooseFact();
@@ -163,19 +168,16 @@ const DeleteFactCommand: Command = {
 };
 
 export const ManageFactsCommand: Command = {
+  __tag: "command",
   name: "Facts",
-  run: Effect.promise(async () => {
-    const command = await chooseCommand({
-      question: "What do you want to do?",
-      commands: [
-        AddFactCommand,
-        DeleteFactCommand,
-        ListFactsCommand,
-        ExploreFactsCommand,
-        EditFactCommand,
-      ],
-    });
-
-    return command;
+  run: chooseCommand({
+    question: "What do you want to do?",
+    commands: [
+      AddFactCommand,
+      DeleteFactCommand,
+      ListFactsCommand,
+      ExploreFactsCommand,
+      EditFactCommand,
+    ],
   }),
 };

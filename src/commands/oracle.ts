@@ -32,6 +32,7 @@ const YesNo = {
 };
 
 export const OracleCommand: Command = {
+  __tag: "command",
   name: "Oracle",
   run: Effect.promise(async () => {
     const response = await prompts({

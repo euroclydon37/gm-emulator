@@ -18,6 +18,7 @@ import { Command } from "../types.js";
 import { Effect } from "effect";
 
 const ListLogsCommand: Command = {
+  __tag: "command",
   name: "List logs",
   run: Effect.promise(async () => {
     const logCount = await askForNumber("How many logs do you want to see?");
@@ -37,6 +38,7 @@ const ListLogsCommand: Command = {
 };
 
 const AddLogCommand: Command = {
+  __tag: "command",
   name: "Add log",
   run: Effect.promise(async () => {
     const log = await askForString("Type your log");
@@ -48,6 +50,7 @@ const AddLogCommand: Command = {
 };
 
 const DeleteLogCommand: Command = {
+  __tag: "command",
   name: "Delete log",
   run: Effect.promise(async () => {
     const appState = await loadAppState();
@@ -65,13 +68,10 @@ const DeleteLogCommand: Command = {
 };
 
 export const ManageLogsCommand: Command = {
+  __tag: "command",
   name: "Logs",
-  run: Effect.promise(async () => {
-    const command = await chooseCommand({
-      question: "What do you want to do?",
-      commands: [AddLogCommand, DeleteLogCommand, ListLogsCommand],
-    });
-
-    return command;
+  run: chooseCommand({
+    question: "What do you want to do?",
+    commands: [AddLogCommand, DeleteLogCommand, ListLogsCommand],
   }),
 };

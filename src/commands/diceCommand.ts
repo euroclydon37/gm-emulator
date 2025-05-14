@@ -46,6 +46,7 @@ const rollCustomDice = async () => {
 };
 
 const SaveNamedDicePoolCommand: Command = {
+  __tag: "command",
   name: "Add named dice pool",
   run: Effect.promise(async () => {
     const name = await askForString("What is the name of the dice pool?");
@@ -57,6 +58,7 @@ const SaveNamedDicePoolCommand: Command = {
 };
 
 const RemoveNamedDicePoolCommand: Command = {
+  __tag: "command",
   name: "Remove named dice pool",
   run: Effect.promise(async () => {
     const appState = await loadAppState();
@@ -78,6 +80,7 @@ const RemoveNamedDicePoolCommand: Command = {
 };
 
 const RollDiceCommand: Command = {
+  __tag: "command",
   name: "Roll",
   run: Effect.promise(async () => {
     const appState = await loadAppState();
@@ -125,17 +128,14 @@ const RollDiceCommand: Command = {
 };
 
 export const DiceCommand: Command = {
+  __tag: "command",
   name: "Dice",
-  run: Effect.promise(async () => {
-    const command = await chooseCommand({
-      question: "What do you want to do?",
-      commands: [
-        RollDiceCommand,
-        SaveNamedDicePoolCommand,
-        RemoveNamedDicePoolCommand,
-      ],
-    });
-
-    return command;
+  run: chooseCommand({
+    question: "What do you want to do?",
+    commands: [
+      RollDiceCommand,
+      SaveNamedDicePoolCommand,
+      RemoveNamedDicePoolCommand,
+    ],
   }),
 };

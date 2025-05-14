@@ -6,6 +6,7 @@ import type { Command } from "../types.js";
 import { Effect } from "effect";
 
 const ActionThemeCommand: Command = {
+  __tag: "command",
   name: "Action/theme",
   run: Effect.promise(async () => {
     const [action, theme] = [
@@ -18,6 +19,7 @@ const ActionThemeCommand: Command = {
 };
 
 const DescriptorFocusCommand: Command = {
+  __tag: "command",
   name: "Descriptor/focus",
   run: Effect.promise(async () => {
     const [descriptor, focus] = [
@@ -30,13 +32,10 @@ const DescriptorFocusCommand: Command = {
 };
 
 export const TablesCommand: Command = {
+  __tag: "command",
   name: "Tables",
-  run: Effect.promise(async () => {
-    const command = await chooseCommand({
-      question: "Which table do you want to roll?",
-      commands: [ActionThemeCommand, DescriptorFocusCommand],
-    });
-
-    return command;
+  run: chooseCommand({
+    question: "Which table do you want to roll?",
+    commands: [ActionThemeCommand, DescriptorFocusCommand],
   }),
 };
