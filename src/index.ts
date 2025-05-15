@@ -10,14 +10,12 @@ const program = pipe(
   loadAppState,
   Effect.map(getCurrentGame),
   Effect.flatMap((game) => {
-    if (!game) {
-      return Effect.succeed(CreateGameCommand);
-    }
-
-    return chooseCommand({
-      question: "What do you want to do?",
-      commands: Object.values(commands),
-    });
+    return !game
+      ? Effect.succeed(CreateGameCommand)
+      : chooseCommand({
+          question: "What do you want to do?",
+          commands: Object.values(commands),
+        });
   }),
   Effect.flatMap(runCommand),
   Effect.match({
