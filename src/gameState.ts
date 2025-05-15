@@ -87,7 +87,7 @@ export function getNamedDicePools(game: GameState): Record<string, string> {
 }
 
 export const saveNamedDicePool =
-  (name: string, combo: string) =>
+  ([name, combo]: [string, string]) =>
   (game: GameState): GameState => {
     return {
       ...game,
@@ -128,7 +128,7 @@ export const addLogEntry =
     };
   };
 
-export function removeLogEntry(game: GameState): GameState {
+export function dropLastLogEntry(game: GameState): GameState {
   return {
     ...game,
     log: game.log.slice(0, -1),

@@ -17,8 +17,28 @@ import {
   saveNamedDicePool,
   updateGameState,
 } from "../gameState.js";
-import type { Command } from "../types.js";
-import { Effect } from "effect";
+import type { Command, GameState } from "../types.js";
+import { Effect, pipe } from "effect";
+
+const getDiceCombo = (game: GameState): Effect.Effect<string, Error, never> =>
+  Effect.tryPromise({
+    try: async () => {
+      const { combo } = await prompts({
+        type: "autocomplete",
+        name: "combo",
+        message: "Which dice pool do you want to remove?",
+        choices: Object.keys(getNamedDicePools(game)).map((name) => ({
+          title: name,
+          value: name,
+        })),
+      });
+
+      if (!combo) throw new Error();
+
+      return combo;
+    },
+    catch: () => new Error("No combo chosen"),
+  });
 
 const rollSimilarDice = (combo: string) => {
   const dice = combo.split("d");
@@ -30,101 +50,106 @@ const rollSimilarDice = (combo: string) => {
   );
 };
 
-const rollDicePool = async (dicePool: string) => {
-  // Save the dice roll to history
-  await saveAppState(updateGameState(saveLastDicePool(dicePool)));
-
-  return dicePool.split("+").map(rollSimilarDice).flat();
-};
-
-const rollCustomDice = async () => {
-  const dicePool = await askForString(
-    "Describe your dice pool. (e.g. 1d20+1d6)",
+const rollDicePool = (
+  dicePool: string,
+): Effect.Effect<string[], never, never> =>
+  pipe(
+    Effect.succeed(dicePool),
+    Effect.map(saveLastDicePool),
+    Effect.map(updateGameState),
+    Effect.flatMap(saveAppState),
+    Effect.map(() => dicePool.split("+")),
+    Effect.map((pool) => pool.map(rollSimilarDice)),
+    Effect.map((results) => results.flat()),
   );
-  const rollResults = await rollDicePool(dicePool);
-  return wrapOutput(chalk.yellow(rollResults.join("\n")));
-};
+
+const rollCustomDice = (): Effect.Effect<string[], Error, never> =>
+  pipe(
+    askForString("Describe your dice pool. (e.g. 1d20+1d6)"),
+    Effect.flatMap(rollDicePool),
+  );
 
 const SaveNamedDicePoolCommand: Command = {
   __tag: "command",
   name: "Add named dice pool",
-  run: Effect.promise(async () => {
-    const name = await askForString("What is the name of the dice pool?");
-    const combo = await askForString("Describe the pool. (e.g. 1d20+1d6) ");
-
-    await saveAppState(updateGameState(saveNamedDicePool(name, combo)));
-    return wrapOutput(chalk.green("Dice combo saved"));
-  }),
+  run: pipe(
+    Effect.zip(
+      askForString("What is the name of the dice pool?"),
+      askForString("Describe the pool. (e.g. 1d20+1d6) "),
+    ),
+    Effect.map(saveNamedDicePool),
+    Effect.map(updateGameState),
+    Effect.flatMap(saveAppState),
+    Effect.map(() => wrapOutput(chalk.green("Dice combo saved"))),
+  ),
 };
 
 const RemoveNamedDicePoolCommand: Command = {
   __tag: "command",
   name: "Remove named dice pool",
-  run: Effect.promise(async () => {
-    const appState = await loadAppState();
-    const game = getCurrentGame(appState);
-
-    const { combo } = await prompts({
-      type: "autocomplete",
-      name: "combo",
-      message: "Which dice pool do you want to remove?",
-      choices: Object.keys(getNamedDicePools(game)).map((name) => ({
-        title: name,
-        value: name,
-      })),
-    });
-
-    await saveAppState(updateGameState(removeNamedDicePool(combo)));
-    return wrapOutput(chalk.green("Dice combo removed"));
-  }),
+  run: pipe(
+    loadAppState,
+    Effect.map(getCurrentGame),
+    Effect.flatMap(getDiceCombo),
+    Effect.map(removeNamedDicePool),
+    Effect.map(updateGameState),
+    Effect.flatMap(saveAppState),
+    Effect.map(() => wrapOutput(chalk.green("Dice combo removed"))),
+  ),
 };
 
 const RollDiceCommand: Command = {
   __tag: "command",
   name: "Roll",
-  run: Effect.promise(async () => {
-    const appState = await loadAppState();
-    const game = getCurrentGame(appState);
+  run: pipe(
+    loadAppState,
+    Effect.map(getCurrentGame),
+    Effect.map((game) => ({
+      rollHistory: getRollHistory(game),
+      namedDicePools: getNamedDicePools(game),
+    })),
+    Effect.map(({ rollHistory, namedDicePools }) =>
+      rollHistory
+        .map((dicePool) => ({
+          title: dicePool,
+          value: dicePool,
+        }))
+        .concat(
+          Object.keys(namedDicePools).map((key) => ({
+            title: key,
+            value: namedDicePools[key],
+          })),
+        )
+        .concat([{ title: "Custom", value: "custom" }]),
+    ),
+    Effect.flatMap(
+      (choices): Effect.Effect<string, Error, never> =>
+        Effect.tryPromise({
+          try: async () => {
+            const { dice_combo } = await prompts({
+              type: "autocomplete",
+              name: "dice_combo",
+              message: "What combo? (e.g. 1d20+1d6)",
+              choices,
+            });
 
-    const rollHistory = getRollHistory(game);
-    const namedDicePools = getNamedDicePools(game);
+            if (!dice_combo) throw new Error();
 
-    const choices = rollHistory
-      .map((dicePool) => ({
-        title: dicePool,
-        value: dicePool,
-      }))
-      .concat(
-        Object.keys(namedDicePools).map((key) => ({
-          title: key,
-          value: namedDicePools[key],
-        })),
-      )
-      .concat([{ title: "Custom", value: "custom" }]);
-
-    const { dice_combo } = await prompts({
-      type: "autocomplete",
-      name: "dice_combo",
-      message: "What combo? (e.g. 1d20+1d6)",
-      choices,
-    });
-
-    if (!dice_combo) {
-      return wrapOutput(
-        chalk.yellow(
-          "No dice pool selected.\n\nYou might have typed a custom dice pool. To do that, you'll first need to select 'Custom'.",
-        ),
-      );
-    }
-
-    if (dice_combo === "custom") {
-      return rollCustomDice();
-    }
-
-    const results = await rollDicePool(dice_combo);
-
-    return wrapOutput(chalk.yellow(results.join("\n")));
-  }),
+            return dice_combo;
+          },
+          catch: () =>
+            new Error(
+              "No dice pool selected.\n\nYou might have typed a custom dice pool. To do that, you'll first need to select 'Custom'.",
+            ),
+        }),
+    ),
+    Effect.flatMap((combo) =>
+      combo === "custom" ? rollCustomDice() : rollDicePool(combo),
+    ),
+    Effect.map((results) => results.join("\n")),
+    Effect.map(chalk.yellow),
+    Effect.map(wrapOutput),
+  ),
 };
 
 export const DiceCommand: Command = {

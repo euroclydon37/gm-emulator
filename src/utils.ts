@@ -23,23 +23,35 @@ export const runCommand = (
     ),
   );
 
-export const askForString = async (question: string): Promise<string> => {
-  const { answer } = await prompts({
-    type: "text",
-    name: "answer",
-    message: question,
-  });
-  return answer;
-};
+export const askForString = (
+  question: string,
+): Effect.Effect<string, Error, never> =>
+  Effect.promise(async () => {
+    const { answer } = await prompts({
+      type: "text",
+      name: "answer",
+      message: question,
+    });
 
-export const askForNumber = async (question: string): Promise<number> => {
-  const { answer } = await prompts({
-    type: "number",
-    name: "answer",
-    message: question,
+    if (typeof answer !== "string") throw new Error();
+
+    return answer;
   });
-  return answer;
-};
+
+export const askForNumber = (
+  question: string,
+): Effect.Effect<number, Error, never> =>
+  Effect.promise(async () => {
+    const { answer } = await prompts({
+      type: "number",
+      name: "answer",
+      message: question,
+    });
+
+    if (typeof answer !== "number") throw Error();
+
+    return answer;
+  });
 
 export const chooseCommand = ({
   question,
@@ -71,7 +83,7 @@ export const wrapOutput = (output: string) => {
   return "--------------------\n\n" + output + "\n\n--------------------";
 };
 
-export const loadAppState = async (): Promise<AppState> => {
+export const loadAppState = Effect.promise(async (): Promise<AppState> => {
   const appDirectoryPath = await getAppDirectoryPath();
   const appFilePath = path.resolve(appDirectoryPath, "app.json");
   const emptyAppState: AppState = {
@@ -87,22 +99,26 @@ export const loadAppState = async (): Promise<AppState> => {
   }
   const appState = JSON.parse(await fs.readFile(appFilePath, "utf8"));
   return appState;
-};
+});
 
-export const saveAppState = async (
-  updater: (appState: AppState) => AppState,
-) => {
-  const appDirectoryPath = await getAppDirectoryPath();
-  const appFilePath = path.resolve(appDirectoryPath, "app.json");
+export const saveAppState = (updater: (appState: AppState) => AppState) =>
+  pipe(
+    loadAppState,
+    Effect.flatMap((state) =>
+      Effect.promise(async () => {
+        const appDirectoryPath = await getAppDirectoryPath();
+        const appFilePath = path.resolve(appDirectoryPath, "app.json");
 
-  await fs.writeFile(
-    appFilePath,
-    JSON.stringify(updater(await loadAppState()), null, 2),
-    {
-      encoding: "utf8",
-    },
+        await fs.writeFile(
+          appFilePath,
+          JSON.stringify(updater(state), null, 2),
+          {
+            encoding: "utf8",
+          },
+        );
+      }),
+    ),
   );
-};
 
 export function isError(input: unknown): input is AppError {
   return !!input && (input as AppError).type === "error";

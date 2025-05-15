@@ -7,11 +7,8 @@ import { chooseCommand, loadAppState, runCommand } from "./utils.js";
 import chalk from "chalk";
 
 const program = pipe(
-  Effect.promise(async () => {
-    const appState = await loadAppState();
-    const game = getCurrentGame(appState);
-    return game;
-  }),
+  loadAppState,
+  Effect.map(getCurrentGame),
   Effect.flatMap((game) => {
     if (!game) {
       return Effect.succeed(CreateGameCommand);
