@@ -34,3 +34,8 @@ export interface AppState {
   currentGame: string | undefined;
   games: ReadonlyArray<GameState>;
 }
+
+export interface AutocompleteOption<T> {
+  title: string;
+  value: T;
+}
