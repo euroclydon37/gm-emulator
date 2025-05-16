@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs/promises";
 import { AppError, AppState, Command } from "./types";
 import { getAppDirectoryPath } from "./constants.js";
-import { Effect, pipe, Console } from "effect";
+import { Effect, pipe } from "effect";
 
 const isDefined = <T>(x: T | undefined | null): x is T =>
   x !== undefined && x !== null;
@@ -11,7 +11,8 @@ const isDefined = <T>(x: T | undefined | null): x is T =>
 export const randomNumber = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1) + min);
 
-export const pickRandom = <T>(arr: T[]) => arr[randomNumber(0, arr.length - 1)];
+export const pickRandom = <T>(arr: T[]): Effect.Effect<T, never, never> =>
+  Effect.succeed(arr[randomNumber(0, arr.length - 1)]);
 
 export const runCommand = (
   command: Command,

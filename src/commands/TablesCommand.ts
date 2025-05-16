@@ -3,32 +3,28 @@ import { actionTheme } from "../tables/action-theme.js";
 import { descriptorFocus } from "../tables/descriptor-focus.js";
 import { chooseCommand, pickRandom, wrapOutput } from "../utils.js";
 import type { Command } from "../types.js";
-import { Effect } from "effect";
+import { Effect, pipe } from "effect";
 
 const ActionThemeCommand: Command = {
   __tag: "command",
   name: "Action/theme",
-  run: Effect.promise(async () => {
-    const [action, theme] = [
-      pickRandom(actionTheme).action,
-      pickRandom(actionTheme).theme,
-    ];
-
-    return wrapOutput(chalk.yellow(`${action} ${theme}`));
-  }),
+  run: pipe(
+    Effect.zip(pickRandom(actionTheme), pickRandom(actionTheme)),
+    Effect.map(([a, t]) => `${a.action} ${t.theme}`),
+    Effect.map(chalk.yellow),
+    Effect.map(wrapOutput),
+  ),
 };
 
 const DescriptorFocusCommand: Command = {
   __tag: "command",
   name: "Descriptor/focus",
-  run: Effect.promise(async () => {
-    const [descriptor, focus] = [
-      pickRandom(descriptorFocus).descriptor,
-      pickRandom(descriptorFocus).focus,
-    ];
-
-    return wrapOutput(chalk.yellow(`${descriptor} ${focus}`));
-  }),
+  run: pipe(
+    Effect.zip(pickRandom(descriptorFocus), pickRandom(descriptorFocus)),
+    Effect.map(([d, f]) => `${d.descriptor} ${f.focus}`),
+    Effect.map(chalk.yellow),
+    Effect.map(wrapOutput),
+  ),
 };
 
 export const TablesCommand: Command = {
