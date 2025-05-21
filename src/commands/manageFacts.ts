@@ -26,6 +26,10 @@ const loadFacts = pipe(
   loadAppState,
   Effect.map(getCurrentGame),
   Effect.map((game) => game.facts),
+  Effect.matchEffect({
+    onSuccess: (facts) => Effect.succeed(facts),
+    onFailure: () => Effect.succeed({} as Factbook),
+  }),
 );
 
 function factToString(fact: Fact): string {
@@ -100,20 +104,23 @@ const chooseFact = (
       return Effect.succeed(input);
     }),
     Effect.flatMap((input) =>
-      Effect.promise(async () => {
-        const { next } = await prompts({
-          type: "autocomplete",
-          name: "next",
-          message: "What next?",
-          choices: [
-            { title: "Show this", value: "stop" },
-            { title: "Choose detail", value: "continue" },
-          ],
-        });
+      Effect.tryPromise({
+        try: async () => {
+          const { next } = await prompts({
+            type: "autocomplete",
+            name: "next",
+            message: "What next?",
+            choices: [
+              { title: "Show this", value: "stop" },
+              { title: "Choose detail", value: "continue" },
+            ],
+          });
 
-        if (typeof next !== "string") throw new Error();
+          if (typeof next !== "string") throw new Error();
 
-        return { ...input, next };
+          return { ...input, next };
+        },
+        catch: () => new FactError("no next"),
       }),
     ),
     Effect.map(({ facts, choice }) => facts[choice]),

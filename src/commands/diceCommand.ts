@@ -50,9 +50,7 @@ const rollSimilarDice = (combo: string) => {
   );
 };
 
-const rollDicePool = (
-  dicePool: string,
-): Effect.Effect<string[], never, never> =>
+const rollDicePool = (dicePool: string) =>
   pipe(
     Effect.succeed(dicePool),
     Effect.map(saveLastDicePool),

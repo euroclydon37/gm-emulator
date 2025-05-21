@@ -24,11 +24,17 @@ const isDefined = <T>(x: T | undefined | null): x is T =>
 const getAppDataFilePath = (appDirectoryPath: string) =>
   path.resolve(appDirectoryPath, "app.json");
 
-export const randomNumber = (min: number, max: number) =>
-  Math.floor(Math.random() * (max - min + 1) + min);
+export const randomNumber = (
+  min: number,
+  max: number,
+): Effect.Effect<number, never, never> =>
+  Effect.succeed(Math.floor(Math.random() * (max - min + 1) + min));
 
 export const pickRandom = <T>(arr: T[]): Effect.Effect<T, never, never> =>
-  Effect.succeed(arr[randomNumber(0, arr.length - 1)]);
+  pipe(
+    randomNumber(0, arr.length - 1),
+    Effect.map((index) => arr[index]),
+  );
 
 const promptAutocomplete = <T>(
   question: string,

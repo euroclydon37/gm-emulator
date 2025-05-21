@@ -2,16 +2,17 @@ import prompts from "prompts";
 import { randomNumber, wrapOutput } from "../utils.js";
 import chalk from "chalk";
 import { Command } from "../types.js";
-import { Effect } from "effect";
+import { Effect, pipe } from "effect";
 
-const getAndButString = () => {
-  const number = randomNumber(1, 100);
+const getAndButString = pipe(
+  randomNumber(1, 100),
+  Effect.map((number) => {
+    if (number <= 10) return ", but...";
+    if (number >= 90) return ", and...";
 
-  if (number <= 10) return ", but...";
-  if (number >= 90) return ", and...";
-
-  return "";
-};
+    return "";
+  }),
+);
 
 const YesNo = {
   very_likely: {
@@ -34,27 +35,32 @@ const YesNo = {
 export const OracleCommand: Command = {
   __tag: "command",
   name: "Oracle",
-  run: Effect.promise(async () => {
-    const response = await prompts({
-      type: "autocomplete",
-      name: "likelihood",
-      message: "How likely is it?",
-      choices: [
-        { title: "Very likely", value: "very_likely" },
-        { title: "Likely", value: "likely" },
-        { title: "50/50", value: "50/50" },
-        { title: "Unlikely", value: "unlikely" },
-        { title: "Very unlikely", value: "very_unlikely" },
-      ],
-    });
+  run: Effect.Do.pipe(
+    Effect.bind("randomNumber", () => randomNumber(1, 100)),
+    Effect.bind("andButString", () => getAndButString),
+    Effect.flatMap(({ randomNumber, andButString }) =>
+      Effect.promise(async () => {
+        const response = await prompts({
+          type: "autocomplete",
+          name: "likelihood",
+          message: "How likely is it?",
+          choices: [
+            { title: "Very likely", value: "very_likely" },
+            { title: "Likely", value: "likely" },
+            { title: "50/50", value: "50/50" },
+            { title: "Unlikely", value: "unlikely" },
+            { title: "Very unlikely", value: "very_unlikely" },
+          ],
+        });
 
-    const likelihood: keyof typeof YesNo = response.likelihood;
+        const likelihood: keyof typeof YesNo = response.likelihood;
 
-    const answer = YesNo[likelihood].get(randomNumber(1, 100));
-    const result = answer + getAndButString();
-
-    return wrapOutput(
-      answer === "Yes" ? chalk.green(result) : chalk.red(result),
-    );
-  }),
+        return YesNo[likelihood].get(randomNumber) + andButString;
+      }),
+    ),
+    Effect.map((answer) =>
+      answer.startsWith("Yes") ? chalk.green(answer) : chalk.red(answer),
+    ),
+    Effect.map(wrapOutput),
+  ),
 };
