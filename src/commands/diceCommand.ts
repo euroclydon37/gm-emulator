@@ -4,6 +4,7 @@ import {
   chooseCommand,
   loadAppState,
   randomNumber,
+  rollDie,
   saveAppState,
   wrapOutput,
 } from "../utils.js";
@@ -20,36 +21,42 @@ import {
 import type { Command, GameState } from "../types.js";
 import { Effect, pipe } from "effect";
 
-const getDiceCombo = (game: GameState): Effect.Effect<string, Error, never> =>
-  Effect.tryPromise({
-    try: async () => {
-      const { combo } = await prompts({
-        type: "autocomplete",
-        name: "combo",
-        message: "Which dice pool do you want to remove?",
-        choices: Object.keys(getNamedDicePools(game)).map((name) => ({
-          title: name,
-          value: name,
-        })),
-      });
+const getDiceCombo =
+  (message: string) =>
+  (game: GameState): Effect.Effect<string, Error, never> =>
+    Effect.tryPromise({
+      try: async () => {
+        const { combo } = await prompts({
+          type: "autocomplete",
+          name: "combo",
+          message,
+          choices: Object.keys(getNamedDicePools(game)).map((name) => ({
+            title: name,
+            value: name,
+          })),
+        });
 
-      if (!combo) throw new Error();
+        if (!combo) throw new Error();
 
-      return combo;
-    },
-    catch: () => new Error("No combo chosen"),
-  });
+        return combo;
+      },
+      catch: () => new Error("No combo chosen"),
+    });
 
-const rollSimilarDice = (combo: string) => {
-  const dice = combo.split("d");
-  const numDice = parseInt(dice[0]);
-  const dieSize = parseInt(dice[1]);
-  return Array.from(
-    { length: numDice },
-    () => `d${dieSize}: ${randomNumber(1, dieSize)}`,
+// A combo is a string like "2d6" or "1d20"
+const rollSimilarDice = (combo: string) =>
+  pipe(
+    Effect.sync(() => {
+      const dice = combo.split("d");
+      const numDice = parseInt(dice[0]);
+      const dieSize = parseInt(dice[1]);
+      return Array.from({ length: numDice }, () => dieSize);
+    }),
+    Effect.flatMap(Effect.forEach(rollDie)),
+    Effect.map((results) => results),
   );
-};
 
+// A dice pool is a string like "2d6+1d4+1d8"
 const rollDicePool = (dicePool: string) =>
   pipe(
     Effect.succeed(dicePool),
@@ -57,11 +64,13 @@ const rollDicePool = (dicePool: string) =>
     Effect.map(updateGameState),
     Effect.flatMap(saveAppState),
     Effect.map(() => dicePool.split("+")),
-    Effect.map((pool) => pool.map(rollSimilarDice)),
+    Effect.flatMap((pool) =>
+      Effect.forEach(pool, (dice) => rollSimilarDice(dice)),
+    ),
     Effect.map((results) => results.flat()),
   );
 
-const rollCustomDice = (): Effect.Effect<string[], Error, never> =>
+const rollCustomDice = () =>
   pipe(
     askForString("Describe your dice pool. (e.g. 1d20+1d6)"),
     Effect.flatMap(rollDicePool),
@@ -88,7 +97,7 @@ const RemoveNamedDicePoolCommand: Command = {
   run: pipe(
     loadAppState,
     Effect.map(getCurrentGame),
-    Effect.flatMap(getDiceCombo),
+    Effect.flatMap(getDiceCombo("Which dice pool do you want to remove?")),
     Effect.map(removeNamedDicePool),
     Effect.map(updateGameState),
     Effect.flatMap(saveAppState),
@@ -99,13 +108,15 @@ const RemoveNamedDicePoolCommand: Command = {
 const RollDiceCommand: Command = {
   __tag: "command",
   name: "Roll",
-  run: pipe(
-    loadAppState,
-    Effect.map(getCurrentGame),
-    Effect.map((game) => ({
-      rollHistory: getRollHistory(game),
-      namedDicePools: getNamedDicePools(game),
-    })),
+  run: Effect.Do.pipe(
+    () => loadAppState,
+    Effect.bind("game", (appState) => Effect.succeed(getCurrentGame(appState))),
+    Effect.bind("rollHistory", ({ game }) =>
+      Effect.succeed(getRollHistory(game)),
+    ),
+    Effect.bind("namedDicePools", ({ game }) =>
+      Effect.succeed(getNamedDicePools(game)),
+    ),
     Effect.map(({ rollHistory, namedDicePools }) =>
       rollHistory
         .map((dicePool) => ({

@@ -30,6 +30,9 @@ export const randomNumber = (
 ): Effect.Effect<number, never, never> =>
   Effect.succeed(Math.floor(Math.random() * (max - min + 1) + min));
 
+export const rollDie = (sides: number): Effect.Effect<number, never, never> =>
+  randomNumber(1, sides);
+
 export const pickRandom = <T>(arr: T[]): Effect.Effect<T, never, never> =>
   pipe(
     randomNumber(0, arr.length - 1),
