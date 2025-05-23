@@ -3,6 +3,7 @@ import {
   askForString,
   chooseCommand,
   loadAppState,
+  promptAutocomplete,
   randomNumber,
   rollDie,
   saveAppState,
@@ -22,25 +23,14 @@ import type { Command, GameState } from "../types.js";
 import { Effect, pipe } from "effect";
 
 const getDiceCombo =
-  (message: string) =>
+  (question: string) =>
   (game: GameState): Effect.Effect<string, Error, never> =>
-    Effect.tryPromise({
-      try: async () => {
-        const { combo } = await prompts({
-          type: "autocomplete",
-          name: "combo",
-          message,
-          choices: Object.keys(getNamedDicePools(game)).map((name) => ({
-            title: name,
-            value: name,
-          })),
-        });
-
-        if (!combo) throw new Error();
-
-        return combo;
-      },
-      catch: () => new Error("No combo chosen"),
+    promptAutocomplete({
+      question,
+      choices: Object.keys(getNamedDicePools(game)).map((name) => ({
+        title: name,
+        value: name,
+      })),
     });
 
 // A combo is a string like "2d6" or "1d20"

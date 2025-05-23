@@ -39,20 +39,23 @@ export const pickRandom = <T>(arr: T[]): Effect.Effect<T, never, never> =>
     Effect.map((index) => arr[index]),
   );
 
-const promptAutocomplete = <T>(
-  question: string,
-  choices: AutocompleteOption<T>[],
-): Effect.Effect<T, Error, never> =>
+export const promptAutocomplete = <T>({
+  question,
+  choices,
+}: {
+  question: string;
+  choices: AutocompleteOption<T>[];
+}): Effect.Effect<T, Error, never> =>
   Effect.tryPromise({
     try: async () => {
-      const { cmd } = await prompts({
+      const { result } = await prompts({
         type: "autocomplete",
-        name: "cmd",
+        name: "result",
         message: question,
         choices,
       });
 
-      return cmd;
+      return result;
     },
     catch: () => new Error("Problem with autocomplete"),
   });
@@ -106,13 +109,13 @@ export const chooseCommand = ({
   question: string;
   commands: Command[];
 }) =>
-  promptAutocomplete(
+  promptAutocomplete({
     question,
-    commands.map((command) => ({
+    choices: commands.map((command) => ({
       title: command.name,
       value: command,
     })),
-  );
+  });
 
 export const wrapOutput = (output: string) => {
   return "--------------------\n\n" + output + "\n\n--------------------";
