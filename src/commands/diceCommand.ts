@@ -53,20 +53,23 @@ const rollSimilarDice = (combo: string) =>
       return Array.from({ length: numDice }, () => dieSize);
     }),
     Effect.flatMap(Effect.forEach(rollDie)),
-    Effect.map((results) => results),
+  );
+
+const appendToRollHistory = (dicePool: string) =>
+  pipe(
+    Effect.succeed(dicePool),
+    Effect.map(saveLastDicePool),
+    Effect.map(updateGameState),
+    Effect.flatMap(saveAppState),
   );
 
 // A dice pool is a string like "2d6+1d4+1d8"
 const rollDicePool = (dicePool: string) =>
   pipe(
     Effect.succeed(dicePool),
-    Effect.map(saveLastDicePool),
-    Effect.map(updateGameState),
-    Effect.flatMap(saveAppState),
+    Effect.tap(appendToRollHistory),
     Effect.map(() => dicePool.split("+")),
-    Effect.flatMap((pool) =>
-      Effect.forEach(pool, (dice) => rollSimilarDice(dice)),
-    ),
+    Effect.flatMap(Effect.forEach(rollSimilarDice)),
     Effect.map((results) => results.flat()),
   );
 
